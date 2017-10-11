@@ -29,6 +29,7 @@ func TestDoNotUnlock(t *testing.T) {
 	}
 }
 */
+/*
 func TestDoNotUnlockParallel(t *testing.T) {
 	k := New()
 	go k.TransactionStart(101, 102)
@@ -41,7 +42,7 @@ func TestDoNotUnlockParallel(t *testing.T) {
 		t.Error("Parallel threads prevented the program from terminating correctly.")
 	}
 }
-
+*/
 func TestFreeze(t *testing.T) {
 	var wg sync.WaitGroup
 	k := New()
@@ -50,7 +51,7 @@ func TestFreeze(t *testing.T) {
 		go k.TransactionStart(uint64(i), uint64(i)+1)
 	}
 	for i := 0; i < 100; i++ {
-		// wg.Add(1)
+		wg.Add(1)
 		go k.TransactionEnd(uint64(i), uint64(i)+1)
 	}
 

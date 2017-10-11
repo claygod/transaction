@@ -32,6 +32,7 @@ func New() Transaction {
 func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
 	key1 := uint16(n1)
 	key2 := uint16(n2)
+	fmt.Print("- start ", key1, " - ", key2, "BEGIN\r\n")
 	counter := trialLimit
 
 lockingStart:
@@ -42,6 +43,7 @@ lockingStart:
 		runtime.Gosched()
 		counter--
 		if counter == 0 {
+			fmt.Print("- start ", key1, " - ", key2, "FINISH-ERROR\r\n")
 			return false
 		}
 	}
@@ -55,12 +57,14 @@ lockingStart:
 		goto lockingStart
 	}
 	atomic.AddInt64(&k.counter, 1)
+	fmt.Print("- start ", key1, " - ", key2, "FINISH-OK\r\n")
 	return true
 }
 
 func (k *Transaction) TransactionEnd(n1 uint64, n2 uint64) error {
 	key1 := uint16(n1)
 	key2 := uint16(n2)
+	fmt.Print("- end ", key1, " - ", key2, " \r\n")
 
 	if err := k.nodes[key1].unfreeze(n1); err != nil {
 		return err
