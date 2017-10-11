@@ -1,0 +1,148 @@
+package transaction
+
+// Transaction
+// API
+// Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+
+import (
+	"errors"
+	"fmt"
+	"runtime"
+	"sync"
+	"sync/atomic"
+)
+
+const countNodes int = 65535
+const trialLimit int = 20000000
+
+type Transaction struct {
+	counter int64
+	nodes   [countNodes]node
+}
+
+// New - create new transaction.
+func New() Transaction {
+	k := Transaction{}
+	for i := range k.nodes {
+		k.nodes[i] = newNode()
+	}
+	return k
+}
+
+func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
+	key1 := uint16(n1)
+	key2 := uint16(n2)
+	counter := trialLimit
+
+lockingStart:
+
+	for k.nodes[key1].freeze(n1) == false {
+		key1, key2 = key2, key1
+		n1, n2 = n2, n1
+		runtime.Gosched()
+		counter--
+		if counter == 0 {
+			return false
+		}
+	}
+	atomic.AddInt64(&k.counter, 1)
+	if k.nodes[key2].freeze(n2) == false {
+		k.nodes[key1].unfreeze(n1)
+		atomic.AddInt64(&k.counter, -1)
+		key1, key2 = key2, key1
+		n1, n2 = n2, n1
+		runtime.Gosched()
+		goto lockingStart
+	}
+	atomic.AddInt64(&k.counter, 1)
+	return true
+}
+
+func (k *Transaction) TransactionEnd(n1 uint64, n2 uint64) error {
+	key1 := uint16(n1)
+	key2 := uint16(n2)
+
+	if err := k.nodes[key1].unfreeze(n1); err != nil {
+		return err
+	}
+	atomic.AddInt64(&k.counter, -1)
+	if err := k.nodes[key2].unfreeze(n2); err != nil {
+		return err
+	}
+	atomic.AddInt64(&k.counter, -1)
+	return nil
+}
+
+// node - default element for queue
+type node struct {
+	m    sync.Mutex
+	hasp int32
+	arr  map[uint64]bool
+}
+
+// newNode - create new node.
+func newNode() node {
+	n := node{}
+	n.arr = make(map[uint64]bool)
+	return n
+}
+
+func (n *node) freeze(p uint64) bool {
+	n.m.Lock()
+	//if n.lock() == false {
+	//	return false
+	//}
+	if _, ok := n.arr[p]; ok {
+		//n.hasp = 0 // unlock
+		n.m.Unlock()
+		return false
+	}
+	n.arr[p] = true
+	//n.hasp = 0 // unlock
+	n.m.Unlock()
+	return true
+}
+
+func (n *node) unfreeze(p uint64) error {
+	n.m.Lock()
+	//if n.lock() == false {
+	//	return false
+	//}
+	if _, ok := n.arr[p]; ok {
+		//n.hasp = 0 // unlock
+		delete(n.arr, p)
+		n.m.Unlock()
+		return nil
+	}
+	//n.hasp = 0 // unlock
+	n.m.Unlock()
+	return errors.New(fmt.Sprintf("Number `%d` was not blocked", p))
+}
+
+// lock - block node
+func (n *node) lock() bool {
+	for i := trialLimit; i > 0; i-- {
+		if n.hasp == 0 && atomic.CompareAndSwapInt32(&n.hasp, 0, 1) {
+			break
+		}
+		if i == 5 {
+			return false
+		}
+		//runtime.Gosched()
+	}
+	return true
+}
+
+// unlock - unblock node
+func (n *node) unlock() bool {
+	for i := trialLimit; i > 0; i-- {
+		if n.hasp == 1 && atomic.CompareAndSwapInt32(&n.hasp, 1, 0) {
+			break
+		}
+		if i == 5 {
+			return false
+		}
+		//runtime.Gosched()
+	}
+	return true
+}
