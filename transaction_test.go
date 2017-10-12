@@ -45,12 +45,14 @@ func TestDoNotUnlockParallel(t *testing.T) {
 */
 func TestFreeze(t *testing.T) {
 	//var wg sync.WaitGroup
-	iterat := 70000
+	iterat := 90000
 	k := New()
 	for i := 0; i < iterat; i++ {
-		//wg.Add(1)
+
 		k.TransactionStart(uint64(i), uint64(i)+1)
+
 		go k.TransactionEnd(uint64(i), uint64(i)+1)
+		//wg.Add(1)
 	}
 	//for i := 0; i < 10; i++ {
 	//	wg.Add(1)

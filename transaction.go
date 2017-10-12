@@ -34,6 +34,7 @@ func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
 	key2 := uint16(n2)
 	//fmt.Print("- start ", key1, " - ", key2, "BEGIN\r\n")
 	counter := trialLimit
+	counter2 := trialLimit
 
 lockingStart:
 
@@ -47,16 +48,21 @@ lockingStart:
 			return false
 		}
 	}
-	atomic.AddInt64(&k.counter, 1)
+	//atomic.AddInt64(&k.counter, 1)
 	if k.nodes[key2].freeze(n2) == false {
 		k.nodes[key1].unfreeze(n1)
-		atomic.AddInt64(&k.counter, -1)
+		//atomic.AddInt64(&k.counter, -1)
 		key1, key2 = key2, key1
 		n1, n2 = n2, n1
 		runtime.Gosched()
+		counter2--
+		if counter2 == 0 {
+			//fmt.Print("- start ", key1, " - ", key2, "FINISH-ERROR\r\n")
+			return false
+		}
 		goto lockingStart
 	}
-	atomic.AddInt64(&k.counter, 1)
+	//atomic.AddInt64(&k.counter, 1)
 	//fmt.Print("- start ", key1, " - ", key2, "FINISH-OK\r\n")
 	return true
 }
@@ -69,11 +75,11 @@ func (k *Transaction) TransactionEnd(n1 uint64, n2 uint64) error {
 	if err := k.nodes[key1].unfreeze(n1); err != nil {
 		return err
 	}
-	atomic.AddInt64(&k.counter, -1)
+	//atomic.AddInt64(&k.counter, -1)
 	if err := k.nodes[key2].unfreeze(n2); err != nil {
 		return err
 	}
-	atomic.AddInt64(&k.counter, -1)
+	//atomic.AddInt64(&k.counter, -1)
 	return nil
 }
 
@@ -133,7 +139,7 @@ func (n *node) lock() bool {
 		if i == 5 {
 			return false
 		}
-		//runtime.Gosched()
+		runtime.Gosched()
 	}
 	return true
 }

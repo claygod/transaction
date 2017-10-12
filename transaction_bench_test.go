@@ -34,7 +34,29 @@ func BenchmarkFreezeUnfreezeNodeadlock(b *testing.B) {
 	k := New()
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		k.TransactionStart(uint64(i), uint64(i)+2)
-		k.TransactionEnd(uint64(i), uint64(i)+2)
+		k.TransactionStart(uint64(i), uint64(i)+1)
+		k.TransactionEnd(uint64(i), uint64(i)+1)
+	}
+}
+
+func BenchmarkFreezeUnfreezeDeadlock(b *testing.B) {
+	b.StopTimer()
+	iterat := 1000
+	k := New()
+	for i := 0; i < iterat; i++ {
+		go k.TransactionStart(uint64(i), uint64(i)+1)
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		k.TransactionEnd(uint64(i), uint64(i)+1)
+	}
+}
+
+func BenchmarkMapAdd(b *testing.B) {
+	b.StopTimer()
+	m := make(map[uint64]bool)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		m[uint64(uint8(i))] = true
 	}
 }
