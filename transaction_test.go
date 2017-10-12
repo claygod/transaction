@@ -7,7 +7,7 @@ package transaction
 import (
 	"fmt"
 	//"runtime"
-	"sync"
+	//"sync"
 	"sync/atomic"
 	"testing"
 )
@@ -44,22 +44,24 @@ func TestDoNotUnlockParallel(t *testing.T) {
 }
 */
 func TestFreeze(t *testing.T) {
-	var wg sync.WaitGroup
+	//var wg sync.WaitGroup
+	iterat := 70000
 	k := New()
-	for i := 0; i < 100; i++ {
-		// wg.Add(1)
-		go k.TransactionStart(uint64(i), uint64(i)+1)
-	}
-	for i := 0; i < 100; i++ {
-		wg.Add(1)
+	for i := 0; i < iterat; i++ {
+		//wg.Add(1)
+		k.TransactionStart(uint64(i), uint64(i)+1)
 		go k.TransactionEnd(uint64(i), uint64(i)+1)
 	}
+	//for i := 0; i < 10; i++ {
+	//	wg.Add(1)
+	//	go k.TransactionEnd(uint64(i), uint64(i)+1)
+	//}
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < iterat; i++ {
 		//runtime.Gosched()
 	}
 
-	wg.Wait()
+	//wg.Wait()
 	if count := atomic.LoadInt64(&k.counter); count != 0 {
 		t.Error(fmt.Sprintf("Received `%d` instead of `0`", count))
 	}

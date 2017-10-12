@@ -12,7 +12,7 @@ import (
 	"sync/atomic"
 )
 
-const countNodes int = 65535
+const countNodes int = 65536
 const trialLimit int = 20000000
 
 type Transaction struct {
@@ -32,7 +32,7 @@ func New() Transaction {
 func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
 	key1 := uint16(n1)
 	key2 := uint16(n2)
-	fmt.Print("- start ", key1, " - ", key2, "BEGIN\r\n")
+	//fmt.Print("- start ", key1, " - ", key2, "BEGIN\r\n")
 	counter := trialLimit
 
 lockingStart:
@@ -43,7 +43,7 @@ lockingStart:
 		runtime.Gosched()
 		counter--
 		if counter == 0 {
-			fmt.Print("- start ", key1, " - ", key2, "FINISH-ERROR\r\n")
+			//fmt.Print("- start ", key1, " - ", key2, "FINISH-ERROR\r\n")
 			return false
 		}
 	}
@@ -57,14 +57,14 @@ lockingStart:
 		goto lockingStart
 	}
 	atomic.AddInt64(&k.counter, 1)
-	fmt.Print("- start ", key1, " - ", key2, "FINISH-OK\r\n")
+	//fmt.Print("- start ", key1, " - ", key2, "FINISH-OK\r\n")
 	return true
 }
 
 func (k *Transaction) TransactionEnd(n1 uint64, n2 uint64) error {
 	key1 := uint16(n1)
 	key2 := uint16(n2)
-	fmt.Print("- end ", key1, " - ", key2, " \r\n")
+	//fmt.Print("- end ", key1, " - ", key2, " \r\n")
 
 	if err := k.nodes[key1].unfreeze(n1); err != nil {
 		return err
@@ -110,11 +110,12 @@ func (n *node) freeze(p uint64) bool {
 func (n *node) unfreeze(p uint64) error {
 	n.m.Lock()
 	//if n.lock() == false {
-	//	return false
+	//	return errors.New(fmt.Sprintf("Number `%d` failed to block", p))
 	//}
 	if _, ok := n.arr[p]; ok {
-		//n.hasp = 0 // unlock
+
 		delete(n.arr, p)
+		//n.hasp = 0 // unlock
 		n.m.Unlock()
 		return nil
 	}

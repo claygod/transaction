@@ -28,3 +28,13 @@ func BenchmarkSpeedAtom(b *testing.B) {
 		n.unlock()
 	}
 }
+
+func BenchmarkFreezeUnfreezeNodeadlock(b *testing.B) {
+	b.StopTimer()
+	k := New()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		k.TransactionStart(uint64(i), uint64(i)+2)
+		k.TransactionEnd(uint64(i), uint64(i)+2)
+	}
+}
