@@ -16,8 +16,8 @@ type account struct {
 }
 
 // newAccount - create new account.
-func newAccount(amount int64) account {
-	k := account{balance: amount}
+func newAccount(amount int64) *account {
+	k := &account{balance: amount}
 	return k
 }
 
