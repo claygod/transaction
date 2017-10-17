@@ -16,17 +16,42 @@ const countNodes int = 65536
 const trialLimit int = 20000000
 
 type Transaction struct {
-	counter int64
-	nodes   [countNodes]node
+	m         sync.Mutex
+	counter   int64
+	nodes     [countNodes]node
+	customers map[int64]Customer
 }
 
 // New - create new transaction.
 func New() Transaction {
-	k := Transaction{}
+	k := Transaction{customers: make(map[int64]Customer)}
 	for i := range k.nodes {
 		k.nodes[i] = newNode()
 	}
 	return k
+}
+
+func (t *Transaction) AddCustomer(id int64) error {
+	_, ok := t.customers[id]
+	if !ok {
+		t.m.Lock()
+		defer t.m.Unlock()
+		_, ok = t.customers[id]
+		if !ok {
+			t.customers[id] = newCustomer()
+			return nil
+		}
+	}
+	return errors.New("This customer already exists")
+}
+
+func (t *Transaction) DelCustomer(id int64) error {
+	_, ok := t.customers[id]
+	if !ok {
+		return errors.New("This customer does not exist")
+	}
+	//
+	return nil
 }
 
 func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
