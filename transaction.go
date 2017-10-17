@@ -66,6 +66,15 @@ func (t *Transaction) transferDo(tr *Transfer) error {
 	return nil
 }
 
+func (t *Transaction) Purchase() *Purchase {
+	return newPurchase(t)
+}
+
+func (t *Transaction) purchaseDo(tr *Transfer) error {
+
+	return nil
+}
+
 func (t *Transaction) getAccount(cus int64, acc string) *Account {
 	c, ok := t.customers[cus]
 	if !ok {
