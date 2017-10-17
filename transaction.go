@@ -19,12 +19,12 @@ type Transaction struct {
 	m         sync.Mutex
 	counter   int64
 	nodes     [countNodes]node
-	customers map[int64]Customer
+	customers map[int64]*Customer
 }
 
 // New - create new transaction.
 func New() Transaction {
-	k := Transaction{customers: make(map[int64]Customer)}
+	k := Transaction{customers: make(map[int64]*Customer)}
 	for i := range k.nodes {
 		k.nodes[i] = newNode()
 	}
@@ -43,6 +43,43 @@ func (t *Transaction) AddCustomer(id int64) error {
 		}
 	}
 	return errors.New("This customer already exists")
+}
+
+func (t *Transaction) Transfer() *Transfer {
+	return newTransfer(t)
+}
+
+func (t *Transaction) transferDo(tr *Transfer) error {
+	accFrom := t.getAccount(tr.from, tr.account)
+	if accFrom == nil {
+		return errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", tr.account, tr.from))
+	}
+	accTo := t.getAccount(tr.to, tr.account)
+	if accTo == nil {
+		return errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", tr.account, tr.to))
+	}
+	if err := accFrom.reserve(tr.count); err != nil {
+		return errors.New(fmt.Sprintf("Error `reserve` in  account `%s` of user `%d`: `%s`", tr.account, tr.to, err.Error()))
+	}
+	accFrom.give(tr.count)
+	accTo.add(tr.count)
+	return nil
+}
+
+func (t *Transaction) getAccount(cus int64, acc string) *Account {
+	c, ok := t.customers[cus]
+	if !ok {
+		return nil
+	}
+	return c.Account(acc)
+}
+
+func (t *Transaction) Customer(id int64) *Customer {
+	c, ok := t.customers[id]
+	if !ok {
+		return nil //errors.New("This customer does not exist")
+	}
+	return c
 }
 
 func (t *Transaction) DelCustomer(id int64) error {

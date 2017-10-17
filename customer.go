@@ -18,8 +18,8 @@ type Customer struct {
 }
 
 // newCustomer - create new account.
-func newCustomer() Customer {
-	k := Customer{accounts: make(map[string]*Account)}
+func newCustomer() *Customer {
+	k := &Customer{accounts: make(map[string]*Account)}
 	return k
 }
 

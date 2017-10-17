@@ -12,6 +12,11 @@ import (
 	"testing"
 )
 
+func TestTransfer(t *testing.T) {
+	tn := New()
+	tn.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
+}
+
 func TestUnfreezeUnfrozen(t *testing.T) {
 	k := New()
 	k.TransactionStart(101, 102)
