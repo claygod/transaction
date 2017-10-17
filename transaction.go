@@ -70,8 +70,15 @@ func (t *Transaction) Purchase() *Purchase {
 	return newPurchase(t)
 }
 
-func (t *Transaction) purchaseDo(tr *Transfer) error {
-
+func (t *Transaction) purchaseDo(p *Purchase) error {
+	moneyBuyer := t.getAccount(p.buyer, p.money)
+	if moneyBuyer == nil {
+		return errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", p.money, p.buyer))
+	}
+	moneySeller := t.getAccount(p.seller, p.money)
+	if moneySeller == nil {
+		return errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", p.money, p.seller))
+	}
 	return nil
 }
 
