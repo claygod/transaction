@@ -16,7 +16,7 @@ func TestTransfer(t *testing.T) {
 	tn := New()
 	tn.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
 	tn.Transaction().
-		Debet(14760464, "USD", 5).
+		Debit(14760464, "USD", 5).
 		Credit(2674560, "USD", 5).
 		Do()
 }

@@ -56,7 +56,7 @@ func newOperation(tn *Transaction) *Operation {
 	return o
 }
 
-func (o *Operation) Debet(customer int64, account string, count int64) *Operation {
+func (o *Operation) Debit(customer int64, account string, count int64) *Operation {
 	o.up = append(o.up, Check{customer, account, count})
 	return o
 }

@@ -116,6 +116,7 @@ func (t *Transaction) executeTransaction(o *Operation) error {
 	if err != nil {
 		return err
 	}
+	// Debit
 	for num, i := range downItems {
 		if err := i.account.reserve(i.count); err != nil {
 			err2 := t.deReserve(downItems, num).Error()
@@ -126,6 +127,7 @@ func (t *Transaction) executeTransaction(o *Operation) error {
 	for _, i := range downItems {
 		i.account.give(i.count)
 	}
+	// Credit
 	for _, i := range upItems {
 		i.account.add(i.count)
 	}
