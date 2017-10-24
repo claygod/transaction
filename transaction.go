@@ -112,19 +112,23 @@ func (t *Transaction) DelCustomer(id int64) error {
 }
 
 func (t *Transaction) executeTransaction(o *Operation) error {
-	downItems, _, err := t.checksToItems(o)
+	downItems, upItems, err := t.checksToItems(o)
 	if err != nil {
 		return err
 	}
 	for num, i := range downItems {
 		if err := i.account.reserve(i.count); err != nil {
-			err2 := t.deReserve(downItems, num)
-			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. ",
-				o.down[num].customer, o.down[num].account, i.count, err2.Error()))
+			err2 := t.deReserve(downItems, num).Error()
+			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
+				o.down[num].customer, o.down[num].account, i.count, err2))
 		}
-
 	}
-
+	for _, i := range downItems {
+		i.account.give(i.count)
+	}
+	for _, i := range upItems {
+		i.account.add(i.count)
+	}
 	return nil
 }
 

@@ -23,6 +23,8 @@ func newCustomer() *Customer {
 	return k
 }
 
+// Account - get an account link.
+// If there is no such account, it will be created.
 func (c *Customer) Account(num string) *Account {
 	a, ok := c.accounts[num]
 	if !ok {
@@ -51,22 +53,21 @@ func (c *Customer) delAllAccounts(num string) map[string]*Account {
 	return aList
 }
 
-func (c *Customer) delAccount(num string) (int64, error) {
+func (c *Customer) DelAccount(num string) (int64, int64, error) {
 	_, ok := c.accounts[num]
 	if ok {
 		c.m.Lock()
 		defer c.m.Unlock()
 		a, ok := c.accounts[num]
 		if ok {
-			if a.debt == 0 {
-				balance := a.balance
+			if a.balance == 0 && a.debt == 0 {
 				delete(c.accounts, num)
-				return balance, nil
+				return 0, 0, nil
 			}
-			return a.debt, errors.New("The account is partially blocked.")
+			return a.balance, a.debt, errors.New("Account is not zero.")
 		}
 	}
-	return -1, errors.New("There is no such account")
+	return -1, -1, errors.New("There is no such account")
 }
 
 func (c *Customer) delAccountNoLockUnsafe(num string) error {
