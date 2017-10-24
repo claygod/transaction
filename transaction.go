@@ -90,6 +90,10 @@ func (t *Transaction) getAccount(cus int64, acc string) *Account {
 	return c.Account(acc)
 }
 
+func (t *Transaction) Transaction() *Operation {
+	return newOperation(t)
+}
+
 func (t *Transaction) Customer(id int64) *Customer {
 	c, ok := t.customers[id]
 	if !ok {
@@ -107,6 +111,54 @@ func (t *Transaction) DelCustomer(id int64) error {
 	return nil
 }
 
+func (t *Transaction) executeTransaction(o *Operation) error {
+	downItems, _, err := t.checksToItems(o)
+	if err != nil {
+		return err
+	}
+	for num, i := range downItems {
+		if err := i.account.reserve(i.count); err != nil {
+			err2 := t.deReserve(downItems, num)
+			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. ",
+				o.down[num].customer, o.down[num].account, i.count, err2.Error()))
+		}
+
+	}
+
+	return nil
+}
+
+func (t *Transaction) deReserve(items []*Item, num int) error {
+	for i := 0; i < num; i++ {
+
+	}
+	return nil
+}
+
+func (t *Transaction) checksToItems(o *Operation) ([]*Item, []*Item, error) {
+	downItems := make([]*Item, 0, len(o.down))
+	for num, ch := range o.down {
+		a := t.getAccount(ch.customer, ch.account)
+		if a != nil {
+			downItems[num].account = a
+			downItems[num].count = ch.count
+		} else {
+			return nil, nil, errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", ch.account, ch.customer))
+		}
+	}
+	return nil, nil, nil
+}
+
+/*
+func (t *Transaction) getAccounts(o *Operation) ([]*Account, []*Account, error) {
+	downAccounts := make([]*Account, 0, len(o.down))
+	for _, ch := range o.down {
+		t.getAccount(ch.customer, ch.account)
+	}
+	upAccounts := make([]*Account, 0, len(o.up))
+	return downAccounts, nil, nil
+}
+*/
 func (k *Transaction) TransactionStart(n1 uint64, n2 uint64) bool {
 	key1 := uint16(n1)
 	key2 := uint16(n2)
