@@ -21,6 +21,24 @@ func newAccount(amount int64) *Account {
 	return k
 }
 
+func (a *Account) state() (int64, int64) {
+	var b1, d1, b2, d2 int64
+	b1 = atomic.LoadInt64(&a.balance)
+	d1 = atomic.LoadInt64(&a.debt)
+
+	for {
+		b2 = atomic.LoadInt64(&a.balance)
+		d2 = atomic.LoadInt64(&a.debt)
+		if b1 == b2 && d1 == d2 {
+			break
+		}
+		b1 = b2
+		d1 = d2
+		runtime.Gosched()
+	}
+	return b1, d1
+}
+
 func (a *Account) add(amount int64) int64 {
 	b := atomic.AddInt64(&a.balance, amount)
 	return b
