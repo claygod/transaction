@@ -27,6 +27,15 @@ func (c *Customer) Account(num string) *Account {
 	return a.(*Account)
 }
 
+func (c *Customer) AccountStore(num string) (int64, int64, error) {
+	a, ok := c.accounts.Load(num)
+	if !ok {
+		return -1, -1, errors.New("There is no such account")
+	}
+	acc := a.(*Account)
+	return acc.balance, acc.debt, nil
+}
+
 func (c *Customer) DelAccount(num string) (int64, int64, error) {
 	a, ok := c.accounts.Load(num)
 
