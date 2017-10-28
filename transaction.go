@@ -31,6 +31,29 @@ func New() Transaction {
 	return k
 }
 
+func (t *Transaction) executeTransaction(o *Operation) error {
+	downItems, upItems, err := t.checksToItems(o)
+	if err != nil {
+		return err
+	}
+	// Credit
+	for num, i := range downItems {
+		if err := i.account.reserve(i.count); err != nil {
+			err2 := t.deReserve(downItems, num).Error()
+			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
+				o.down[num].customer, o.down[num].account, i.count, err2))
+		}
+	}
+	for _, i := range downItems {
+		i.account.give(i.count)
+	}
+	// Debit
+	for _, i := range upItems {
+		i.account.add(i.count)
+	}
+	return nil
+}
+
 func (t *Transaction) AddCustomer(id int64) error {
 	_, ok := t.customers[id]
 	if !ok {
@@ -108,29 +131,6 @@ func (t *Transaction) DelCustomer(id int64) error {
 		return errors.New("This customer does not exist")
 	}
 	//
-	return nil
-}
-
-func (t *Transaction) executeTransaction(o *Operation) error {
-	downItems, upItems, err := t.checksToItems(o)
-	if err != nil {
-		return err
-	}
-	// Debit
-	for num, i := range downItems {
-		if err := i.account.reserve(i.count); err != nil {
-			err2 := t.deReserve(downItems, num).Error()
-			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
-				o.down[num].customer, o.down[num].account, i.count, err2))
-		}
-	}
-	for _, i := range downItems {
-		i.account.give(i.count)
-	}
-	// Credit
-	for _, i := range upItems {
-		i.account.add(i.count)
-	}
 	return nil
 }
 
