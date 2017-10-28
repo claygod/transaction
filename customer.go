@@ -6,10 +6,7 @@ package transaction
 
 import (
 	"errors"
-	//"fmt"
-	//"runtime"
 	"sync"
-	//"sync/atomic"
 )
 
 type Customer struct {
@@ -43,4 +40,17 @@ func (c *Customer) DelAccount(num string) (int64, int64, error) {
 		return 0, 0, nil
 	}
 	return b, d, errors.New("Account is not zero.")
+}
+
+func (c *Customer) Store() map[string][2]int64 {
+	nc := make(map[string][2]int64)
+	var b, d int64
+	acc := newAccount(0)
+	c.accounts.Range(func(k, v interface{}) bool {
+		acc = v.(*Account)
+		b, d = acc.state()
+		nc[k.(string)] = [2]int64{b, d}
+		return true
+	})
+	return nc
 }
