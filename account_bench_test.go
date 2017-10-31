@@ -14,7 +14,7 @@ func BenchmarkAccountAdd(b *testing.B) {
 	a := newAccount(100)
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		a.add(1)
+		a.topup(1)
 	}
 }
 
@@ -24,7 +24,7 @@ func BenchmarkAccountAddParallel(b *testing.B) {
 	b.StartTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			a.add(1)
+			a.topup(1)
 		}
 	})
 }

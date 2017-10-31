@@ -49,7 +49,7 @@ func (t *Transaction) executeTransaction(o *Operation) error {
 	}
 	// Debit
 	for _, i := range upItems {
-		i.account.add(i.count)
+		i.account.topup(i.count)
 	}
 	return nil
 }
@@ -85,7 +85,7 @@ func (t *Transaction) transferDo(tr *Transfer) error {
 		return errors.New(fmt.Sprintf("Error `reserve` in  account `%s` of user `%d`: `%s`", tr.account, tr.to, err.Error()))
 	}
 	accFrom.give(tr.count)
-	accTo.add(tr.count)
+	accTo.topup(tr.count)
 	return nil
 }
 

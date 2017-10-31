@@ -11,6 +11,7 @@ import (
 )
 
 type Account struct {
+	hasp    int64
 	balance int64
 	debt    int64
 }
@@ -22,75 +23,91 @@ func newAccount(amount int64) *Account {
 }
 
 func (a *Account) state() (int64, int64) {
-	var b1, d1, b2, d2 int64
-	b1 = atomic.LoadInt64(&a.balance)
-	d1 = atomic.LoadInt64(&a.debt)
-
-	for {
-		b2 = atomic.LoadInt64(&a.balance)
-		d2 = atomic.LoadInt64(&a.debt)
-		if b1 == b2 && d1 == d2 {
-			break
-		}
-		b1 = b2
-		d1 = d2
-		runtime.Gosched()
+	if !a.permit() {
+		return -1, -1
 	}
+	b1 := a.balance
+	d1 := a.debt
+	atomic.StoreInt64(&a.hasp, 0)
+
 	return b1, d1
 }
 
-func (a *Account) add(amount int64) int64 {
-	b := atomic.AddInt64(&a.balance, amount)
+func (a *Account) topup(amount int64) int64 {
+	if !a.permit() {
+		return -1
+	}
+	a.balance += amount
+	b := a.balance
+	atomic.StoreInt64(&a.hasp, 0)
 	return b
 }
 
 func (a *Account) reserve(amount int64) error {
-	if atomic.AddInt64(&a.balance, -(amount)) < 0 {
-		atomic.AddInt64(&a.balance, amount)
+	if !a.permit() {
+		return errors.New("Account not available")
+	}
+	if a.balance-amount < 0 {
+		atomic.StoreInt64(&a.hasp, 0)
 		return errors.New("Insufficient funds in the account")
 	}
-	atomic.AddInt64(&a.debt, amount)
+	a.balance -= amount
+	a.debt += amount
+	atomic.StoreInt64(&a.hasp, 0)
 	return nil
 }
 
 func (a *Account) unreserve(amount int64) error {
-	if atomic.AddInt64(&a.debt, -(amount)) < 0 {
-		atomic.AddInt64(&a.debt, amount)
-		return errors.New("So much was not reserved")
+	if !a.permit() {
+		return errors.New("Account not available")
 	}
-	atomic.AddInt64(&a.balance, amount)
+	if a.debt-amount < 0 {
+		atomic.StoreInt64(&a.hasp, 0)
+		return errors.New("Insufficient funds in the account")
+	}
+	a.balance += amount
+	a.debt -= amount
+	atomic.StoreInt64(&a.hasp, 0)
 	return nil
 }
 
 func (a *Account) unreserveTotal() error {
-	var d int64
-	for i := trialLimit; i > 0; i-- {
-		d = atomic.LoadInt64(&a.debt)
-		if atomic.CompareAndSwapInt64(&a.debt, d, 0) == true {
-			atomic.AddInt64(&a.balance, d)
-			return nil
-		}
-		runtime.Gosched()
+	if !a.permit() {
+		return errors.New("Account not available")
 	}
-	return errors.New("Unable to unblock funds")
+	a.balance += a.debt
+	a.debt = 0
+	atomic.StoreInt64(&a.hasp, 0)
+	return nil
 }
 
 func (a *Account) give(amount int64) error {
-	if atomic.AddInt64(&a.debt, -(amount)) < 0 {
-		atomic.AddInt64(&a.debt, amount)
+	if !a.permit() {
+		return errors.New("Account not available")
+	}
+	if a.debt-amount < 0 {
+		atomic.StoreInt64(&a.hasp, 0)
 		return errors.New("So many not reserved")
 	}
+	a.debt -= amount
+	atomic.StoreInt64(&a.hasp, 0)
 	return nil
 }
 
-func (a *Account) del(amount int64) error {
-	if atomic.AddInt64(&a.balance, -(amount)) < 0 {
-		atomic.AddInt64(&a.balance, amount)
+func (a *Account) withdraw(amount int64) error {
+	if !a.permit() {
+		return errors.New("Account not available")
+	}
+	if a.balance-amount < 0 {
+		atomic.StoreInt64(&a.hasp, 0)
 		return errors.New("So many not reserved")
 	}
+	a.balance -= amount
+	atomic.StoreInt64(&a.hasp, 0)
 	return nil
 }
 
+/*
 func (a *Account) getBalance() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
@@ -98,3 +115,18 @@ func (a *Account) getBalance() int64 {
 func (a *Account) getDebt() int64 {
 	return atomic.LoadInt64(&a.debt)
 }
+*/
+func (a *Account) permit() bool {
+	for i := trialLimit; i > 5; i-- {
+		if atomic.LoadInt64(&a.hasp) < 0 {
+			return false
+		}
+		if atomic.CompareAndSwapInt64(&a.hasp, 0, 1) {
+			return true
+		}
+		runtime.Gosched()
+	}
+	return false
+}
+
+type AccountState [2]int64

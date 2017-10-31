@@ -10,7 +10,7 @@ import (
 
 func TestAccountAdd(t *testing.T) {
 	a := newAccount(100)
-	if a.add(50) != 150 {
+	if a.topup(50) != 150 {
 		t.Error("Error adding")
 	}
 }
@@ -72,16 +72,16 @@ func TestAccountGive(t *testing.T) {
 
 func TestAccountDelOk(t *testing.T) {
 	a := newAccount(100)
-	a.add(50)
-	if a.del(150) != nil {
+	a.topup(50)
+	if a.withdraw(150) != nil {
 		t.Error("The funds available on the balance sheet were sufficient")
 	}
 }
 
 func TestAccountDelError(t *testing.T) {
 	a := newAccount(100)
-	a.add(50)
-	if a.del(200) == nil {
+	a.topup(50)
+	if a.withdraw(200) == nil {
 		t.Error("The funds available on the balance sheet were insufficient")
 	}
 }
