@@ -67,8 +67,7 @@ func (o *Operation) Credit(customer int64, account string, count int64) *Operati
 }
 
 func (o *Operation) End() error {
-	o.tn.executeTransaction(o)
-	return nil
+	return o.tn.executeTransaction(o)
 }
 
 type Request struct {

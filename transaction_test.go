@@ -21,17 +21,18 @@ func TestTransfer(t *testing.T) {
 	if err := ta.Begin().Debit(2674560, "USD", 7).End(); err != nil {
 		t.Error(err)
 	}
-	if err := ta.Begin().Credit(2674560, "USD", 9).End(); err != nil {
+	//t.Error("------", ta.Begin().Credit(2674560, "USD", 9).End())
+	if err := ta.Begin().Credit(2674560, "USD", 3).End(); err != nil {
 		t.Error(err)
 	}
-	/*
-		if err := ta.Begin().
-			Credit(2674560, "USD", 4).
-			//Debit(2674560, "USD", 5).
-			End(); err != nil {
-			t.Error(err)
-		}
-	*/
+
+	if err := ta.Begin().
+		Credit(2674560, "USD", 4).
+		Debit(14760464, "USD", 4).
+		End(); err != nil {
+		t.Error(err)
+	}
+
 }
 
 func TestUnfreezeUnfrozen(t *testing.T) {
