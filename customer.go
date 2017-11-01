@@ -23,19 +23,19 @@ func newCustomer() *Customer {
 
 // Account - get an account link.
 // If there is no such account, it will be created.
-func (c *Customer) Account(num string) *Account {
-	a, _ := c.accounts.LoadOrStore(num, newAccount(0))
+func (c *Customer) Account(key string) *Account {
+	a, _ := c.accounts.LoadOrStore(key, newAccount(0))
 	return a.(*Account)
 }
 
-func (c *Customer) catchAccount(num string) *Account {
+func (c *Customer) catchAccount(key string) *Account {
 	var acc *Account
-	a, ok := c.accounts.Load(num)
+	a, ok := c.accounts.Load(key)
 	if ok {
 		acc = a.(*Account)
 	} else {
 		acc = newAccount(0)
-		c.accounts.Store(num, acc)
+		c.accounts.Store(key, acc)
 	}
 	if acc.catch() {
 		return acc
@@ -43,16 +43,16 @@ func (c *Customer) catchAccount(num string) *Account {
 	return nil
 }
 
-func (c *Customer) throwAccount(num string) bool {
-	if a, ok := c.accounts.Load(num); ok {
+func (c *Customer) throwAccount(key string) bool {
+	if a, ok := c.accounts.Load(key); ok {
 		a.(*Account).throw()
 		return true
 	}
 	return false
 }
 
-func (c *Customer) AccountStore(num string) (int64, int64, error) {
-	a, ok := c.accounts.Load(num)
+func (c *Customer) AccountStore(key string) (int64, int64, error) {
+	a, ok := c.accounts.Load(key)
 	if !ok {
 		return -1, -1, errors.New("There is no such account")
 	}
@@ -60,8 +60,8 @@ func (c *Customer) AccountStore(num string) (int64, int64, error) {
 	return acc.balance, acc.debt, nil
 }
 
-func (c *Customer) DelAccount(num string) (int64, int64, error) {
-	a, ok := c.accounts.Load(num)
+func (c *Customer) DelAccount(key string) (int64, int64, error) {
+	a, ok := c.accounts.Load(key)
 
 	if !ok {
 		return -1, -1, errors.New("There is no such account")
@@ -69,7 +69,7 @@ func (c *Customer) DelAccount(num string) (int64, int64, error) {
 	acc := a.(*Account)
 	b, d := acc.state()
 	if b == 0 && d == 0 {
-		c.accounts.Delete(num)
+		c.accounts.Delete(key)
 		return 0, 0, nil
 	}
 	return b, d, errors.New("Account is not zero.")

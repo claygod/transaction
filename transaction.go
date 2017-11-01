@@ -116,36 +116,44 @@ func (t *Transaction) purchaseDo(p *Purchase) error {
 	return nil
 }
 
-func (t *Transaction) getAccount(cus int64, acc string) *Account {
-	c, ok := t.customers[cus]
+func (t *Transaction) getAccount(id int64, key string) *Account {
+	c, ok := t.customers[id]
 	if !ok {
 		return nil
 	}
-	return c.Account(acc)
+	return c.Account(key)
 }
 
-func (t *Transaction) catchAccount(cus int64, acc string) *Account {
-	c, ok := t.customers[cus]
+func (t *Transaction) catchAccount(id int64, key string) *Account {
+	c, ok := t.customers[id]
 	if !ok {
 		return nil
 	}
-	return c.catchAccount(acc)
+	return c.catchAccount(key)
 }
 
 func (t *Transaction) Begin() *Operation {
 	return newOperation(t)
 }
 
-func (t *Transaction) Customer(id int64) *Customer {
-	c, ok := t.customers[id]
+func (t *Transaction) Customer(cid int64) *Customer {
+	c, ok := t.customers[cid]
 	if !ok {
 		return nil //errors.New("This customer does not exist")
 	}
 	return c
 }
 
-func (t *Transaction) DelCustomer(id int64) error {
-	_, ok := t.customers[id]
+func (t *Transaction) AccountStore(cid int64, key string) (int64, int64, error) {
+	c, ok := t.customers[cid]
+	if !ok {
+		return -2, -2, errors.New("There is no such customer")
+	}
+	return c.AccountStore(key)
+}
+
+func (t *Transaction) DelCustomer(cid int64) error {
+	_, ok := t.customers[cid]
 	if !ok {
 		return errors.New("This customer does not exist")
 	}
