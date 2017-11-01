@@ -6,12 +6,14 @@ package transaction
 
 import (
 	"errors"
+	//"log"
 	"runtime"
 	"sync/atomic"
 )
 
 type Account struct {
 	hasp    int64
+	counter int64
 	balance int64
 	debt    int64
 }
@@ -127,6 +129,23 @@ func (a *Account) permit() bool {
 		runtime.Gosched()
 	}
 	return false
+}
+
+func (a *Account) catch() bool {
+	//log.Print(3333333)
+	if atomic.LoadInt64(&a.hasp) == -1 {
+		return false
+	}
+	atomic.AddInt64(&a.counter, 1)
+	if atomic.LoadInt64(&a.hasp) == -1 {
+		atomic.AddInt64(&a.counter, -1)
+		return false
+	}
+	return true
+}
+
+func (a *Account) throw() {
+	atomic.AddInt64(&a.counter, -1)
 }
 
 type AccountState [2]int64

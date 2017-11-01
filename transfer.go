@@ -43,35 +43,35 @@ func (t *Transfer) Do() error {
 
 type Operation struct {
 	tn   *Transaction
-	down []Check
-	up   []Check
+	down []Request
+	up   []Request
 }
 
 func newOperation(tn *Transaction) *Operation {
 	o := &Operation{
 		tn:   tn,
-		down: make([]Check, 0),
-		up:   make([]Check, 0),
+		down: make([]Request, 0),
+		up:   make([]Request, 0),
 	}
 	return o
 }
 
 func (o *Operation) Debit(customer int64, account string, count int64) *Operation {
-	o.up = append(o.up, Check{customer, account, count})
+	o.up = append(o.up, Request{customer, account, count})
 	return o
 }
 
 func (o *Operation) Credit(customer int64, account string, count int64) *Operation {
-	o.down = append(o.down, Check{customer, account, count})
+	o.down = append(o.down, Request{customer, account, count})
 	return o
 }
 
-func (o *Operation) Do() error {
+func (o *Operation) End() error {
 	o.tn.executeTransaction(o)
 	return nil
 }
 
-type Check struct {
+type Request struct {
 	customer int64
 	account  string
 	count    int64

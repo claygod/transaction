@@ -5,20 +5,33 @@ package transaction
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	"fmt"
+	//"fmt"
 	//"runtime"
 	//"sync"
-	"sync/atomic"
+	//"sync/atomic"
 	"testing"
 )
 
 func TestTransfer(t *testing.T) {
-	tn := New()
-	tn.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
-	tn.Transaction().
-		Debit(14760464, "USD", 5).
-		Credit(2674560, "USD", 5).
-		Do()
+	ta := New()
+	ta.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
+	ta.AddCustomer(14760464)
+	ta.AddCustomer(2674560)
+
+	if err := ta.Begin().Debit(2674560, "USD", 7).End(); err != nil {
+		t.Error(err)
+	}
+	if err := ta.Begin().Credit(2674560, "USD", 9).End(); err != nil {
+		t.Error(err)
+	}
+	/*
+		if err := ta.Begin().
+			Credit(2674560, "USD", 4).
+			//Debit(2674560, "USD", 5).
+			End(); err != nil {
+			t.Error(err)
+		}
+	*/
 }
 
 func TestUnfreezeUnfrozen(t *testing.T) {
@@ -51,7 +64,7 @@ func TestDoNotUnlockParallel(t *testing.T) {
 		t.Error("Parallel threads prevented the program from terminating correctly.")
 	}
 }
-*/
+
 func TestFreeze(t *testing.T) {
 	//var wg sync.WaitGroup
 	iterat := 90000
@@ -77,3 +90,4 @@ func TestFreeze(t *testing.T) {
 		t.Error(fmt.Sprintf("Received `%d` instead of `0`", count))
 	}
 }
+*/

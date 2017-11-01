@@ -6,6 +6,7 @@ package transaction
 
 import (
 	"errors"
+	//"log"
 	"sync"
 )
 
@@ -25,6 +26,29 @@ func newCustomer() *Customer {
 func (c *Customer) Account(num string) *Account {
 	a, _ := c.accounts.LoadOrStore(num, newAccount(0))
 	return a.(*Account)
+}
+
+func (c *Customer) catchAccount(num string) *Account {
+	var acc *Account
+	a, ok := c.accounts.Load(num)
+	if ok {
+		acc = a.(*Account)
+	} else {
+		acc = newAccount(0)
+		c.accounts.Store(num, acc)
+	}
+	if acc.catch() {
+		return acc
+	}
+	return nil
+}
+
+func (c *Customer) throwAccount(num string) bool {
+	if a, ok := c.accounts.Load(num); ok {
+		a.(*Account).throw()
+		return true
+	}
+	return false
 }
 
 func (c *Customer) AccountStore(num string) (int64, int64, error) {

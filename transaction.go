@@ -7,6 +7,7 @@ package transaction
 import (
 	"errors"
 	"fmt"
+	"log"
 	"runtime"
 	"sync"
 	"sync/atomic"
@@ -32,25 +33,35 @@ func New() Transaction {
 }
 
 func (t *Transaction) executeTransaction(o *Operation) error {
-	downItems, upItems, err := t.checksToItems(o)
+	//log.Print(1111111)
+	downItems, upItems, err := t.requestToItems(o)
 	if err != nil {
 		return err
 	}
 	// Credit
 	for num, i := range downItems {
+		log.Printf("Balance: `%d`, Debt: `%d`, CREDIT: `%d`.", i.account.balance, i.account.debt, i.count)
 		if err := i.account.reserve(i.count); err != nil {
-			err2 := t.deReserve(downItems, num).Error()
+			err2 := t.deReserve(downItems, num)
+			t.throwItems(downItems, num)
+			log.Printf("Balance: `%d`, Debt: `%d`, CREDIT____: `%d`.", i.account.balance, i.account.debt, i.count)
 			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
 				o.down[num].customer, o.down[num].account, i.count, err2))
 		}
+		log.Printf("Balance: `%d`, Debt: `%d`, CREDIT____: `%d`.", i.account.balance, i.account.debt, i.count)
 	}
 	for _, i := range downItems {
 		i.account.give(i.count)
+		log.Printf("Balance: `%d`, Debt: `%d`, give____: `%d`.", i.account.balance, i.account.debt, i.count)
 	}
 	// Debit
 	for _, i := range upItems {
+		log.Printf("Balance: `%d`, Debt: `%d`, DEBIT: `%d`.", i.account.balance, i.account.debt, i.count)
 		i.account.topup(i.count)
+		log.Printf("Balance: `%d`, Debt: `%d`, DEBIT______: `%d`.", i.account.balance, i.account.debt, i.count)
 	}
+	t.throwItems(downItems, len(downItems))
+	t.throwItems(upItems, len(upItems))
 	return nil
 }
 
@@ -113,7 +124,15 @@ func (t *Transaction) getAccount(cus int64, acc string) *Account {
 	return c.Account(acc)
 }
 
-func (t *Transaction) Transaction() *Operation {
+func (t *Transaction) catchAccount(cus int64, acc string) *Account {
+	c, ok := t.customers[cus]
+	if !ok {
+		return nil
+	}
+	return c.catchAccount(acc)
+}
+
+func (t *Transaction) Begin() *Operation {
 	return newOperation(t)
 }
 
@@ -136,11 +155,59 @@ func (t *Transaction) DelCustomer(id int64) error {
 
 func (t *Transaction) deReserve(items []*Item, num int) error {
 	for i := 0; i < num; i++ {
-
+		log.Print(num)
+		items[i].account.unreserve(items[i].count)
 	}
 	return nil
 }
 
+func (t *Transaction) requestToItems(o *Operation) ([]*Item, []*Item, error) {
+	downItems := make([]*Item, 0, len(o.down))
+	for num, ch := range o.down {
+		a := t.catchAccount(ch.customer, ch.account)
+		if a != nil {
+			//downItems[num].account = a
+			//downItems[num].count = ch.count
+			downItems = append(downItems, &Item{account: a, count: ch.count})
+		} else {
+			t.throwItems(downItems, num)
+			return nil, nil, errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", ch.account, ch.customer))
+		}
+	}
+	upItems := make([]*Item, 0, len(o.up))
+	for num, ch := range o.up {
+		a := t.catchAccount(ch.customer, ch.account)
+		if a != nil {
+			upItems = append(upItems, &Item{account: a, count: ch.count})
+			//upItems[num].account = a
+			//upItems[num].count = ch.count
+		} else {
+			t.throwItems(downItems, len(o.down))
+			t.throwItems(upItems, num)
+			return nil, nil, errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", ch.account, ch.customer))
+		}
+	}
+
+	return downItems, upItems, nil
+}
+
+func (t *Transaction) throwItems(items []*Item, num int) {
+	for i, item := range items {
+		if i >= num {
+			break
+		}
+		item.account.throw()
+	}
+	/*
+		for i := 0; i < num; i++ {
+			log.Print("-", i)
+			items[num].account.throw()
+			log.Print("-", i)
+		}
+	*/
+}
+
+/*
 func (t *Transaction) checksToItems(o *Operation) ([]*Item, []*Item, error) {
 	downItems := make([]*Item, 0, len(o.down))
 	for num, ch := range o.down {
@@ -155,7 +222,7 @@ func (t *Transaction) checksToItems(o *Operation) ([]*Item, []*Item, error) {
 	return nil, nil, nil
 }
 
-/*
+
 func (t *Transaction) getAccounts(o *Operation) ([]*Account, []*Account, error) {
 	downAccounts := make([]*Account, 0, len(o.down))
 	for _, ch := range o.down {
