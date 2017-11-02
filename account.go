@@ -109,20 +109,8 @@ func (a *Account) withdraw(amount int64) error {
 	return nil
 }
 
-/*
-func (a *Account) getBalance() int64 {
-	return atomic.LoadInt64(&a.balance)
-}
-
-func (a *Account) getDebt() int64 {
-	return atomic.LoadInt64(&a.debt)
-}
-*/
 func (a *Account) permit() bool {
-	for i := trialLimit; i > 5; i-- {
-		if atomic.LoadInt64(&a.hasp) < 0 {
-			return false
-		}
+	for i := trialLimit; i > trialStop; i-- {
 		if atomic.CompareAndSwapInt64(&a.hasp, 0, 1) {
 			return true
 		}
@@ -132,20 +120,48 @@ func (a *Account) permit() bool {
 }
 
 func (a *Account) catch() bool {
-	//log.Print(3333333)
-	if atomic.LoadInt64(&a.hasp) == -1 {
-		return false
+	var c int64
+	for i := trialLimit; i > trialStop; i-- {
+		c = atomic.LoadInt64(&a.counter)
+		if c == -1 {
+			return false
+		}
+		if atomic.CompareAndSwapInt64(&a.counter, c, c+1) {
+			return true
+		}
+		runtime.Gosched()
 	}
-	atomic.AddInt64(&a.counter, 1)
-	if atomic.LoadInt64(&a.hasp) == -1 {
-		atomic.AddInt64(&a.counter, -1)
-		return false
-	}
-	return true
+	return false
 }
 
 func (a *Account) throw() {
 	atomic.AddInt64(&a.counter, -1)
+}
+
+func (a *Account) start() bool {
+	for i := trialLimit; i > trialStop; i-- {
+		if atomic.CompareAndSwapInt64(&a.counter, -1, 0) {
+			return true
+		}
+		if atomic.LoadInt64(&a.counter) >= 0 {
+			return true
+		}
+		runtime.Gosched()
+	}
+	return false
+}
+
+func (a *Account) stop() bool {
+	for i := trialLimit; i > trialStop; i-- {
+		if atomic.CompareAndSwapInt64(&a.counter, 0, -1) {
+			return true
+		}
+		if atomic.LoadInt64(&a.counter) == -1 {
+			return true
+		}
+		runtime.Gosched()
+	}
+	return false
 }
 
 type AccountState [2]int64

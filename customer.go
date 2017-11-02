@@ -29,26 +29,12 @@ func (c *Customer) Account(key string) *Account {
 }
 
 func (c *Customer) catchAccount(key string) *Account {
-	var acc *Account
-	a, ok := c.accounts.Load(key)
-	if ok {
-		acc = a.(*Account)
-	} else {
-		acc = newAccount(0)
-		c.accounts.Store(key, acc)
-	}
+	a, _ := c.accounts.LoadOrStore(key, newAccount(0))
+	acc := a.(*Account)
 	if acc.catch() {
-		return acc
+		return a.(*Account)
 	}
 	return nil
-}
-
-func (c *Customer) throwAccount(key string) bool {
-	if a, ok := c.accounts.Load(key); ok {
-		a.(*Account).throw()
-		return true
-	}
-	return false
 }
 
 func (c *Customer) AccountStore(key string) (int64, int64, error) {

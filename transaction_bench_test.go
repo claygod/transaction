@@ -9,27 +9,7 @@ import (
 	"testing"
 )
 
-func BenchmarkSpeedMutex(b *testing.B) {
-	b.StopTimer()
-	n := newNode()
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		n.m.Lock()
-		n.m.Unlock()
-	}
-}
-
-func BenchmarkSpeedAtom(b *testing.B) {
-	b.StopTimer()
-	n := newNode()
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		n.lock()
-		//n.hasp = 0
-		n.unlock()
-	}
-}
-
+/*
 func BenchmarkFreezeUnfreezeNodeadlock(b *testing.B) {
 	b.StopTimer()
 	k := New()
@@ -40,7 +20,7 @@ func BenchmarkFreezeUnfreezeNodeadlock(b *testing.B) {
 	}
 }
 
-/*
+
 func BenchmarkFreezeUnfreezeDeadlock(b *testing.B) {
 	b.StopTimer()
 	iterat := 1000

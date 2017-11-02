@@ -35,6 +35,7 @@ func TestTransfer(t *testing.T) {
 
 }
 
+/*
 func TestUnfreezeUnfrozen(t *testing.T) {
 	k := New()
 	k.TransactionStart(101, 102)
@@ -43,7 +44,7 @@ func TestUnfreezeUnfrozen(t *testing.T) {
 	}
 }
 
-/*
+
 func TestDoNotUnlock(t *testing.T) {
 	k := New()
 	k.TransactionStart(101, 102)
