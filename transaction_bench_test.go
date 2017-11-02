@@ -1,6 +1,6 @@
-package transaction
+package transactor
 
-// Transaction
+// Transactor
 // Bench
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
@@ -8,32 +8,6 @@ import (
 	"sync/atomic"
 	"testing"
 )
-
-/*
-func BenchmarkFreezeUnfreezeNodeadlock(b *testing.B) {
-	b.StopTimer()
-	k := New()
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		k.TransactionStart(uint64(i), uint64(i)+1)
-		k.TransactionEnd(uint64(i), uint64(i)+1)
-	}
-}
-
-
-func BenchmarkFreezeUnfreezeDeadlock(b *testing.B) {
-	b.StopTimer()
-	iterat := 1000
-	k := New()
-	for i := 0; i < iterat; i++ {
-		go k.TransactionStart(uint64(i), uint64(i)+1)
-	}
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		k.TransactionEnd(uint64(i), uint64(i)+1)
-	}
-}
-*/
 
 func BenchmarkMapRead(b *testing.B) {
 	b.StopTimer()
