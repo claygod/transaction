@@ -16,6 +16,7 @@ import (
 const countNodes int = 65536
 const trialLimit int = 20000000
 const trialStop int = 64
+const permitError int64 = -9223372036854775806
 
 type Transactor struct {
 	m         sync.Mutex
