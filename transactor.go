@@ -19,63 +19,63 @@ const trialStop int = 64
 const permitError int64 = -9223372036854775806
 
 type Transactor struct {
-	m         sync.Mutex
-	customers map[int64]*Customer
+	m     sync.Mutex
+	Units map[int64]*Unit
 }
 
 // New - create new transactor.
 func New() Transactor {
-	k := Transactor{customers: make(map[int64]*Customer)}
+	k := Transactor{Units: make(map[int64]*Unit)}
 	return k
 }
 
-func (t *Transactor) AddCustomer(id int64) error {
-	_, ok := t.customers[id]
+func (t *Transactor) AddUnit(id int64) error {
+	_, ok := t.Units[id]
 	if !ok {
 		t.m.Lock()
 		defer t.m.Unlock()
-		_, ok = t.customers[id]
+		_, ok = t.Units[id]
 		if !ok {
-			t.customers[id] = newCustomer()
+			t.Units[id] = newUnit()
 			return nil
 		}
 	}
-	return errors.New("This customer already exists")
+	return errors.New("This unit already exists")
 }
 
-func (t *Transactor) getAccount(id int64, key string) *Account {
-	c, ok := t.customers[id]
+func (t *Transactor) GetUnit(id int64) *Unit {
+	u, ok := t.Units[id]
 	if !ok {
-		return nil
+		return nil //errors.New("This unit does not exist")
 	}
-	return c.Account(key)
+	return u
+}
+
+func (t *Transactor) DelUnit(id int64) ([]string, error) {
+	if u, ok := t.Units[id]; ok {
+		if accList, err := u.delAllAccounts(); err != nil {
+			return accList, err
+		}
+	}
+	return nil, nil
+}
+
+func (t *Transactor) getAccount(id int64, key string) (*Account, error) {
+	u, ok := t.Units[id]
+	if !ok {
+		return nil, errors.New("This unit already exists")
+	}
+	return u.Account(key), nil
 }
 
 func (t *Transactor) Begin() *Transaction {
 	return newTransaction(t)
 }
 
-func (t *Transactor) Customer(cid int64) *Customer {
-	c, ok := t.customers[cid]
-	if !ok {
-		return nil //errors.New("This customer does not exist")
+func (t *Transactor) Total() map[int64]map[string]int64 {
+	ttl := make(map[int64]map[string]int64)
+	for k, u := range t.Units {
+		ttl[k] = u.Total()
 	}
-	return c
-}
-
-func (t *Transactor) AccountStore(cid int64, key string) (int64, int64, error) {
-	c, ok := t.customers[cid]
-	if !ok {
-		return -2, -2, errors.New("There is no such customer")
-	}
-	return c.AccountStore(key)
-}
-
-func (t *Transactor) DelCustomer(cid int64) error {
-	_, ok := t.customers[cid]
-	if !ok {
-		return errors.New("This customer does not exist")
-	}
-	//
-	return nil
+	return ttl
 }

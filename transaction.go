@@ -32,36 +32,28 @@ func (t *Transaction) exeTransaction() error {
 	if err := t.catchTransaction(); err != nil {
 		return err
 	}
-	// transaction
+	// credit
 	for num, i := range t.down {
-		//log.Printf("Balance: `%d`, Debt: `%d`, CREDIT: `%d`.", i.account.balance, i.account.debt, i.amount)
-		if err := i.account.reserve(i.amount); err != nil {
-			err2 := t.deReserve(t.down, num)
+		if res := i.account.creditAtomicFree(i.amount); res < 0 {
+			err2 := t.deCredit(t.down, num)
 			t.throwRequests(t.down, num)
-			//log.Printf("Balance: `%d`, Debt: `%d`, CREDIT____: `%d`.", i.account.balance, i.account.debt, i.amount)
 			return errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
 				t.down[num].id, t.down[num].key, i.amount, err2.Error()))
 		}
-		//log.Printf("Balance: `%d`, Debt: `%d`, CREDIT____: `%d`.", i.account.balance, i.account.debt, i.amount)
-	}
-	for _, i := range t.down {
-		i.account.give(i.amount)
-		//log.Printf("Balance: `%d`, Debt: `%d`, give____: `%d`.", i.account.balance, i.account.debt, i.amount)
 	}
 	// Debit
 	for _, i := range t.up {
 		//log.Printf("Balance: `%d`, Debt: `%d`, DEBIT: `%d`.", i.account.balance, i.account.debt, i.amount)
-		i.account.topup(i.amount)
-		//log.Printf("Balance: `%d`, Debt: `%d`, DEBIT______: `%d`.", i.account.balance, i.account.debt, i.amount)
+		i.account.debitAtomicFree(i.amount)
 	}
 	// throw
 	t.throwTransaction()
 	return nil
 }
 
-func (t *Transaction) deReserve(r []*Request, num int) error {
+func (t *Transaction) deCredit(r []*Request, num int) error {
 	for i := 0; i < num; i++ {
-		r[i].account.unreserve(r[i].amount)
+		r[i].account.debitAtomicFree(r[i].amount)
 	}
 	return nil
 }
@@ -78,9 +70,9 @@ func (t *Transaction) fillTransaction() error {
 
 func (t *Transaction) fillRequests(requests []*Request) error {
 	for i, r := range requests {
-		a := t.tn.getAccount(r.id, r.key)
-		if a == nil {
-			return errors.New(fmt.Sprintf("Could not find account `%s` of user `%d`", r.key, r.id))
+		a, err := t.tn.getAccount(r.id, r.key)
+		if err != nil {
+			return err
 		}
 		requests[i].account = a
 	}

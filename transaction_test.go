@@ -12,8 +12,8 @@ import (
 func TestTransfer(t *testing.T) {
 	tr := New()
 	//ta.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
-	tr.AddCustomer(14760464)
-	tr.AddCustomer(2674560)
+	tr.AddUnit(14760464)
+	tr.AddUnit(2674560)
 
 	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != nil {
 		t.Error(err)
