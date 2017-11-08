@@ -5,7 +5,7 @@ package transactor
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	"errors"
+	//"errors"
 	//"log"
 	"sync"
 )
@@ -51,30 +51,30 @@ func (u *Unit) Total() map[string]int64 {
 	return t
 }
 
-func (u *Unit) DelAccount(key string) error {
+func (u *Unit) DelAccount(key string) errorCodes {
 	a, ok := u.accounts[key]
 	if !ok {
-		return errors.New("There is no such account")
+		return ErrCodeAccountExist
 	}
 	if a.Total() != 0 {
-		return errors.New("Account is not empty")
+		return ErrCodeAccountNotEmpty
 	}
 	if !a.stop() {
-		return errors.New("Account does not stop")
+		return ErrCodeAccountNotStop
 	}
 	u.m.Lock()
 	delete(u.accounts, key)
 	u.m.Unlock()
-	return nil
+	return ErrOk
 }
-func (u *Unit) delAllAccounts() ([]string, error) {
+func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	if notDel := u.del(); len(notDel) != 0 {
-		return notDel, errors.New("Accounts are not empty")
+		return notDel, ErrCodeAccountNotEmpty
 	}
 	if notStop := u.stop(); len(notStop) != 0 {
-		return notStop, errors.New("Do not stop accounts")
+		return notStop, ErrCodeAccountNotStop
 	}
-	return nil, nil
+	return nil, ErrOk
 }
 
 func (u *Unit) del() []string {

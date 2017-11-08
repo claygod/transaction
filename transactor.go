@@ -5,31 +5,31 @@ package transactor
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	"errors"
+	//"errors"
 	//"fmt"
-	//"log"
+	"log"
 	//"runtime"
 	"sync"
 	//"sync/atomic"
 )
 
-const countNodes int = 65536
-const trialLimit int = 20000000
-const trialStop int = 64
-const permitError int64 = -9223372036854775806
-
 type Transactor struct {
-	m     sync.Mutex
-	Units map[int64]*Unit
+	m      sync.Mutex
+	Units  map[int64]*Unit
+	lgr    *logger
+	writer log.Logger
 }
 
 // New - create new transactor.
 func New() Transactor {
-	k := Transactor{Units: make(map[int64]*Unit)}
-	return k
+	t := Transactor{Units: make(map[int64]*Unit), lgr: &logger{}}
+	//t.lgr.New().Context("Type", ErrorTypeExist).Context(ErrorLevelAccount, 2323).Context("Msg", ErrorAccountNotExist).Write()
+
+	t.lgr.New().Context("Type", ErrLevelError).Context("Msg", ErrMsgUnitExist).Context("Unit", 1234242343).Write()
+	return t
 }
 
-func (t *Transactor) AddUnit(id int64) error {
+func (t *Transactor) AddUnit(id int64) errorCodes {
 	_, ok := t.Units[id]
 	if !ok {
 		t.m.Lock()
@@ -37,35 +37,39 @@ func (t *Transactor) AddUnit(id int64) error {
 		_, ok = t.Units[id]
 		if !ok {
 			t.Units[id] = newUnit()
-			return nil
+			return ErrOk
 		}
 	}
-	return errors.New("This unit already exists")
+	t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Write()
+	return ErrCodeUnitExist
 }
 
-func (t *Transactor) GetUnit(id int64) *Unit {
+func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		return nil //errors.New("This unit does not exist")
+		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Write()
+		return nil, ErrCodeUnitExist
 	}
-	return u
+	return u, ErrOk
 }
 
-func (t *Transactor) DelUnit(id int64) ([]string, error) {
+func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 	if u, ok := t.Units[id]; ok {
-		if accList, err := u.delAllAccounts(); err != nil {
+		if accList, err := u.delAllAccounts(); err != ErrOk {
+			t.lgr.New().Context("Msg", err).Context("Unit", id).Write()
 			return accList, err
 		}
 	}
-	return nil, nil
+	return nil, ErrOk
 }
 
-func (t *Transactor) getAccount(id int64, key string) (*Account, error) {
+func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		return nil, errors.New("This unit already exists")
+		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Account", id).Write()
+		return nil, ErrCodeUnitExist
 	}
-	return u.Account(key), nil
+	return u.Account(key), ErrOk
 }
 
 func (t *Transactor) Begin() *Transaction {
@@ -73,6 +77,7 @@ func (t *Transactor) Begin() *Transaction {
 }
 
 func (t *Transactor) Total() map[int64]map[string]int64 {
+	log.Print(1)
 	ttl := make(map[int64]map[string]int64)
 	for k, u := range t.Units {
 		ttl[k] = u.Total()
