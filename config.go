@@ -21,6 +21,10 @@ const (
 	ErrCodeAccountNotExist
 	ErrCodeAccountNotEmpty
 	ErrCodeAccountNotStop
+	ErrCodeTransactionFill
+	ErrCodeTransactionCatch
+	ErrCodeTransactionCredit
+	ErrCodeTransactionDebit
 )
 
 // Error types
@@ -52,6 +56,8 @@ const (
 	ErrMsgAccountNotExist string = `This account already not exists`
 	ErrMsgAccountNotEmpty string = `Account is not empty`
 	ErrMsgAccountNotStop  string = `Account does not stop`
+	ErrMsgAccountNotCatch string = `Not caught account`
+	ErrMsgAccountCredit   string = `Credit transaction error`
 )
 
 // Error_UnitExist := errors.New("This unit already exists")

@@ -35,11 +35,13 @@ func (t *Transaction) exeTransaction() errorCodes {
 		if res := i.account.creditAtomicFree(i.amount); res < 0 {
 			t.deCredit(t.down, num)
 			t.throwRequests(t.down, num)
-			return 222 //  errors.New(fmt.Sprintf("User `%d`, account `%s`, could not reserve `%d`. `%s`",
-			//t.down[num].id, t.down[num].key, i.amount, err2.Error()))
+			t.tn.lgr.New().Context("Msg", ErrMsgAccountCredit).Context("Unit", i.id).
+				Context("Account", i.key).Context("Amount", i.amount).
+				Context("Wrong balance", res).Write()
+			return ErrCodeTransactionCredit
 		}
 	}
-	// Debit
+	// debit
 	for _, i := range t.up {
 		i.account.debitAtomicFree(i.amount)
 	}
@@ -48,11 +50,10 @@ func (t *Transaction) exeTransaction() errorCodes {
 	return ErrOk
 }
 
-func (t *Transaction) deCredit(r []*Request, num int) error {
+func (t *Transaction) deCredit(r []*Request, num int) {
 	for i := 0; i < num; i++ {
 		r[i].account.debitAtomicFree(r[i].amount)
 	}
-	return nil
 }
 
 func (t *Transaction) fillTransaction() errorCodes {
@@ -69,6 +70,7 @@ func (t *Transaction) fillRequests(requests []*Request) errorCodes {
 	for i, r := range requests {
 		a, err := t.tn.getAccount(r.id, r.key)
 		if err != ErrOk {
+			// NOTE: log in method getAccount
 			return err
 		}
 		requests[i].account = a
@@ -96,7 +98,8 @@ func (t *Transaction) catchRequests(requests []*Request) errorCodes {
 	for i, r := range requests {
 		if !r.account.catch() {
 			t.throwRequests(requests, i)
-			return 222 //errors.New(fmt.Sprintf("Not caught account `%s` of user `%d`", r.key, r.id))
+			t.tn.lgr.New().Context("Msg", ErrMsgAccountNotCatch).Context("Unit", r.id).Context("Account", r.key).Write()
+			return ErrCodeTransactionCatch
 		}
 	}
 	return ErrOk

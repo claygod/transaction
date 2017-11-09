@@ -23,9 +23,9 @@ type Transactor struct {
 // New - create new transactor.
 func New() Transactor {
 	t := Transactor{Units: make(map[int64]*Unit), lgr: &logger{}}
-	//t.lgr.New().Context("Type", ErrorTypeExist).Context(ErrorLevelAccount, 2323).Context("Msg", ErrorAccountNotExist).Write()
 
-	t.lgr.New().Context("Type", ErrLevelError).Context("Msg", ErrMsgUnitExist).Context("Unit", 1234242343).Write()
+	t.lgr.New().Context("TEST", "LOG").Context("Type", ErrLevelError).
+		Context("Msg", ErrMsgUnitExist).Context("Unit", 1234242343).Write()
 	return t
 }
 
