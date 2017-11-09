@@ -10,6 +10,15 @@ Transaction:
 - Траблы с удалением аккаунтов и пользователей
 - Конец транзакции
 
+## Transactor
+
+- New
+- load ("path")
+- start (counter)
+- ...
+- stop (counter)
+- save ("path")
+
 ## Bench
 
 - BenchmarkAccountCreditOk-4            	100000000	        15.6 ns/op
