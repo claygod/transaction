@@ -40,14 +40,14 @@ func (t *Transactor) AddUnit(id int64) errorCodes {
 			return ErrOk
 		}
 	}
-	t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Write()
+	t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
 	return ErrCodeUnitExist
 }
 
 func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Write()
+		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Method", "GetUnit").Write()
 		return nil, ErrCodeUnitExist
 	}
 	return u, ErrOk
@@ -56,7 +56,7 @@ func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
 func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 	if u, ok := t.Units[id]; ok {
 		if accList, err := u.delAllAccounts(); err != ErrOk {
-			t.lgr.New().Context("Msg", err).Context("Unit", id).Write()
+			t.lgr.New().Context("Msg", err).Context("Unit", id).Context("Method", "DelUnit").Write()
 			return accList, err
 		}
 	}
@@ -66,7 +66,7 @@ func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Account", id).Write()
+		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
 		return nil, ErrCodeUnitExist
 	}
 	return u.Account(key), ErrOk

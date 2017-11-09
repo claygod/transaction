@@ -37,7 +37,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 			t.throwRequests(t.down, num)
 			t.tn.lgr.New().Context("Msg", ErrMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
-				Context("Wrong balance", res).Write()
+				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
 			return ErrCodeTransactionCredit
 		}
 	}
@@ -98,7 +98,8 @@ func (t *Transaction) catchRequests(requests []*Request) errorCodes {
 	for i, r := range requests {
 		if !r.account.catch() {
 			t.throwRequests(requests, i)
-			t.tn.lgr.New().Context("Msg", ErrMsgAccountNotCatch).Context("Unit", r.id).Context("Account", r.key).Write()
+			t.tn.lgr.New().Context("Msg", ErrMsgAccountNotCatch).Context("Unit", r.id).
+				Context("Account", r.key).Context("Method", "catchRequests").Write()
 			return ErrCodeTransactionCatch
 		}
 	}
