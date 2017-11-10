@@ -24,10 +24,17 @@ func newTransaction(tn *Transactor) *Transaction {
 }
 
 func (t *Transaction) exeTransaction() errorCodes {
+	if !t.tn.Catch() {
+		t.tn.lgr.New().Context("Msg", ErrMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
+		return ErrCodeTransactorCatch
+	}
+	defer t.tn.Throw()
 	if err := t.fillTransaction(); err != ErrOk {
+		t.tn.lgr.New().Context("Msg", ErrMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
 		return err
 	}
 	if err := t.catchTransaction(); err != ErrOk {
+		t.tn.lgr.New().Context("Msg", ErrMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
 		return err
 	}
 	// credit

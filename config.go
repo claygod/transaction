@@ -25,6 +25,12 @@ const (
 	ErrCodeTransactionCatch
 	ErrCodeTransactionCredit
 	ErrCodeTransactionDebit
+	ErrCodeTransactorCatch
+	ErrCodeTransactorStart
+	ErrCodeTransactorStop
+	ErrCodeSaveCreateFile
+	ErrCodeLoadReadFile
+	ErrCodeLoadStrToInt64
 )
 
 // Error types
@@ -51,13 +57,16 @@ const (
 
 // Error level
 const (
-	ErrMsgUnitExist       string = `This unit already exists`
-	ErrMsgAccountExist    string = `This account already exists`
-	ErrMsgAccountNotExist string = `This account already not exists`
-	ErrMsgAccountNotEmpty string = `Account is not empty`
-	ErrMsgAccountNotStop  string = `Account does not stop`
-	ErrMsgAccountNotCatch string = `Not caught account`
-	ErrMsgAccountCredit   string = `Credit transaction error`
+	ErrMsgUnitExist           string = `This unit already exists`
+	ErrMsgAccountExist        string = `This account already exists`
+	ErrMsgAccountNotExist     string = `This account already not exists`
+	ErrMsgAccountNotEmpty     string = `Account is not empty`
+	ErrMsgAccountNotStop      string = `Account does not stop`
+	ErrMsgAccountNotCatch     string = `Not caught account`
+	ErrMsgAccountCredit       string = `Credit transaction error`
+	ErrMsgTransactorNotCatch  string = `Not caught transaction`
+	ErrMsgTransactionNotFill  string = `Not caught transaction`
+	ErrMsgTransactionNotCatch string = `Not caught transaction`
 )
 
 // Error_UnitExist := errors.New("This unit already exists")
