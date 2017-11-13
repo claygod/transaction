@@ -21,7 +21,7 @@ func newUnit() *Unit {
 	return k
 }
 
-func (u *Unit) Account(key string) *Account {
+func (u *Unit) getAccount(key string) *Account {
 	a, ok := u.accounts[key]
 	if !ok {
 		u.m.Lock()
@@ -35,6 +35,7 @@ func (u *Unit) Account(key string) *Account {
 	return a
 }
 
+/*
 func (u *Unit) List() []string {
 	lst := make([]string, 0, len(u.accounts))
 	for k, _ := range u.accounts {
@@ -42,21 +43,21 @@ func (u *Unit) List() []string {
 	}
 	return lst
 }
-
-func (u *Unit) Total() map[string]int64 {
+*/
+func (u *Unit) total() map[string]int64 {
 	t := make(map[string]int64)
 	for k, a := range u.accounts {
-		t[k] = a.Total()
+		t[k] = a.total()
 	}
 	return t
 }
 
-func (u *Unit) DelAccount(key string) errorCodes {
+func (u *Unit) delAccount(key string) errorCodes {
 	a, ok := u.accounts[key]
 	if !ok {
 		return ErrCodeAccountExist
 	}
-	if a.Total() != 0 {
+	if a.total() != 0 {
 		return ErrCodeAccountNotEmpty
 	}
 	if !a.stop() {
@@ -80,7 +81,7 @@ func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 func (u *Unit) del() []string {
 	notDel := make([]string, 0, len(u.accounts))
 	for k, a := range u.accounts {
-		if a.Total() != 0 {
+		if a.total() != 0 {
 			notDel = append(notDel, k)
 		}
 	}

@@ -17,6 +17,7 @@ const (
 )
 const (
 	ErrCodeUnitExist errorCodes = 400 + iota
+	ErrCodeUnitNotExist
 	ErrCodeAccountExist
 	ErrCodeAccountNotExist
 	ErrCodeAccountNotEmpty
@@ -58,6 +59,7 @@ const (
 // Error level
 const (
 	ErrMsgUnitExist           string = `This unit already exists`
+	ErrMsgUnitNotExist        string = `This unit already not exists`
 	ErrMsgAccountExist        string = `This account already exists`
 	ErrMsgAccountNotExist     string = `This account already not exists`
 	ErrMsgAccountNotEmpty     string = `Account is not empty`

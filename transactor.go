@@ -55,6 +55,7 @@ func (t *Transactor) AddUnit(id int64) errorCodes {
 	return ErrCodeUnitExist
 }
 
+/*
 func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
@@ -62,6 +63,24 @@ func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
 		return nil, ErrCodeUnitExist
 	}
 	return u, ErrOk
+}
+*/
+func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
+	u, ok := t.Units[id]
+	if !ok {
+		t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
+		return nil, ErrCodeUnitNotExist
+	}
+	return u.total(), ErrOk
+}
+
+func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
+	u, ok := t.Units[id]
+	if !ok {
+		t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalAccount").Write()
+		return -1, ErrCodeUnitNotExist
+	}
+	return u.getAccount(key).total(), ErrOk
 }
 
 func (t *Transactor) Start() bool {
@@ -174,13 +193,25 @@ func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 	return nil, ErrOk
 }
 
+func (t *Transactor) DelAccount(id int64, key string) errorCodes {
+	if !t.Catch() {
+		return ErrCodeTransactorCatch
+	}
+	defer t.Throw()
+	if u, ok := t.Units[id]; ok {
+		return u.delAccount(key)
+	}
+	t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "DelAccount").Write()
+	return ErrCodeUnitNotExist
+}
+
 func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
 		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
 		return nil, ErrCodeUnitExist
 	}
-	return u.Account(key), ErrOk
+	return u.getAccount(key), ErrOk
 }
 
 func (t *Transactor) Begin() *Transaction {
@@ -194,7 +225,7 @@ func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 	defer t.Throw()
 	ttl := make(map[int64]map[string]int64)
 	for k, u := range t.Units {
-		ttl[k] = u.Total()
+		ttl[k] = u.total()
 	}
 	return ttl, ErrOk
 }

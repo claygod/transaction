@@ -45,7 +45,7 @@ func (a *Account) debitAtomicFree(amount int64) int64 {
 	return atomic.AddInt64(&a.balance, amount)
 }
 
-func (a *Account) Total() int64 {
+func (a *Account) total() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
 
