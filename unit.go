@@ -66,7 +66,7 @@ func (u *Unit) delAccount(key string) errorCodes {
 	u.m.Lock()
 	delete(u.accounts, key)
 	u.m.Unlock()
-	return ErrOk
+	return Ok
 }
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	if notDel := u.del(); len(notDel) != 0 {
@@ -75,7 +75,7 @@ func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	if notStop := u.stop(); len(notStop) != 0 {
 		return notStop, ErrCodeAccountNotStop
 	}
-	return nil, ErrOk
+	return nil, Ok
 }
 
 func (u *Unit) del() []string {

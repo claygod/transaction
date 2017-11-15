@@ -4,8 +4,6 @@ package transactor
 // Config
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-// import	"errors"
-
 const trialLimit int = 2000000000
 const trialStop int = 64
 const permitError int64 = -9223372036854775806
@@ -14,9 +12,18 @@ const separatorSymbol string = ";"
 
 type errorCodes int
 
+// Hasp state
 const (
-	ErrOk errorCodes = 200
+	stateOpen = iota
+	stateClosed
 )
+
+// No error code
+const (
+	Ok errorCodes = 200
+)
+
+// Error codes
 const (
 	ErrCodeUnitExist errorCodes = 400 + iota
 	ErrCodeUnitNotExist
@@ -36,36 +43,7 @@ const (
 	ErrCodeLoadStrToInt64
 )
 
-// Error types
-/*
-const (
-	ErrorTypeExist    string = `Exist`
-	ErrorTypeNotExist string = `Not exist`
-	ErrorTypeNotEmpty string = `Not empty`
-	ErrorTypeNotStop  string = `Not stop`
-)
-*/
-// Hasp state
-const (
-	stateOpen = iota
-	stateClosed
-)
-
-// Error level
-const (
-	ErrLayerAccount = 100 * iota
-	ErrLayerUnit
-	ErrLayerTransaction
-)
-
-// Error level
-const (
-	ErrLevelError   string = `ERROR`
-	ErrLevelWarning string = `WARNING`
-	ErrLevelNotice  string = `NOTICE`
-)
-
-// Error level
+// Error messages
 const (
 	errMsgUnitExist    string = `This unit already exists`
 	errMsgUnitNotExist string = `This unit already not exists`
@@ -73,11 +51,16 @@ const (
 	// errMsgAccountNotExist     string = `This account already not exists`
 	// errMsgAccountNotEmpty     string = `Account is not empty`
 	// errMsgAccountNotStop      string = `Account does not stop`
-	errMsgAccountNotCatch     string = `Not caught account`
-	errMsgAccountCredit       string = `Credit transaction error`
-	errMsgTransactorNotCatch  string = `Not caught transactor`
-	errMsgTransactionNotFill  string = `Not fill transaction`
-	errMsgTransactionNotCatch string = `Not caught transaction`
+	errMsgAccountNotCatch         string = `Not caught account`
+	errMsgAccountCredit           string = `Credit transaction error`
+	errMsgTransactorNotCatch      string = `Not caught transactor`
+	errMsgTransactionNotFill      string = `Not fill transaction`
+	errMsgTransactionNotCatch     string = `Not caught transaction`
+	errMsgTransactorNotStart      string = `Transactor does not start`
+	errMsgTransactorNotStop       string = `Transactor does not stop`
+	errMsgTransactorNotLoad       string = `Transactor does not load`
+	errMsgTransactorNotSave       string = `Transactor does not save`
+	errMsgTransactorNotReadFile   string = `Transactor does not read file`
+	errMsgTransactorNotCreateFile string = `Transactor does not create file`
+	errMsgTransactorParseString   string = `Could not parse line`
 )
-
-// Error_UnitExist := errors.New("This unit already exists")

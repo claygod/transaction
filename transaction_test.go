@@ -24,14 +24,14 @@ func TestTransfer(t *testing.T) {
 			}
 		}
 	*/
-	if err := tr.Begin().Debit(14760464, "USD", 11).End(); err != ErrOk {
+	if err := tr.Begin().Debit(14760464, "USD", 11).End(); err != Ok {
 		t.Error(err)
 	}
-	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != ErrOk {
+	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != Ok {
 		t.Error(err)
 	}
 	//t.Error("------", ta.Begin().Credit(2674560, "USD", 9).End())
-	if err := tr.Begin().Credit(2674560, "USD", 2).End(); err != ErrOk {
+	if err := tr.Begin().Credit(2674560, "USD", 2).End(); err != Ok {
 		t.Error(err)
 	}
 	tr.Save("test.tdb")
@@ -40,7 +40,7 @@ func TestTransfer(t *testing.T) {
 	if err := tr.Begin().
 		Credit(2674560, "USD", 4).
 		Debit(14760464, "USD", 4).
-		End(); err != ErrOk {
+		End(); err != Ok {
 		t.Error(err)
 	}
 

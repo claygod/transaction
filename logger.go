@@ -13,8 +13,7 @@ import (
 type logger map[string]interface{}
 
 func (l logger) New() logger {
-	x := make(logger)
-	return x
+	return make(logger)
 }
 
 func (l logger) Context(k string, v interface{}) logger {

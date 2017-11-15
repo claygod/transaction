@@ -29,11 +29,11 @@ func (t *Transaction) exeTransaction() errorCodes {
 		return ErrCodeTransactorCatch
 	}
 	defer t.tn.throw()
-	if err := t.fillTransaction(); err != ErrOk {
+	if err := t.fillTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
 		return err
 	}
-	if err := t.catchTransaction(); err != ErrOk {
+	if err := t.catchTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
 		return err
 	}
@@ -54,7 +54,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 	}
 	// throw
 	t.throwTransaction()
-	return ErrOk
+	return Ok
 }
 
 func (t *Transaction) deCredit(r []*Request, num int) {
@@ -64,36 +64,36 @@ func (t *Transaction) deCredit(r []*Request, num int) {
 }
 
 func (t *Transaction) fillTransaction() errorCodes {
-	if err := t.fillRequests(t.down); err != ErrOk {
+	if err := t.fillRequests(t.down); err != Ok {
 		return err
 	}
-	if err := t.fillRequests(t.up); err != ErrOk {
+	if err := t.fillRequests(t.up); err != Ok {
 		return err
 	}
-	return ErrOk
+	return Ok
 }
 
 func (t *Transaction) fillRequests(requests []*Request) errorCodes {
 	for i, r := range requests {
 		a, err := t.tn.getAccount(r.id, r.key)
-		if err != ErrOk {
+		if err != Ok {
 			// NOTE: log in method getAccount
 			return err
 		}
 		requests[i].account = a
 	}
-	return ErrOk
+	return Ok
 }
 
 func (t *Transaction) catchTransaction() errorCodes {
-	if err := t.catchRequests(t.down); err != ErrOk {
+	if err := t.catchRequests(t.down); err != Ok {
 		return err
 	}
-	if err := t.catchRequests(t.up); err != ErrOk {
+	if err := t.catchRequests(t.up); err != Ok {
 		t.throwRequests(t.down, len(t.down))
 		return err
 	}
-	return ErrOk
+	return Ok
 }
 
 func (t *Transaction) throwTransaction() {
@@ -110,7 +110,7 @@ func (t *Transaction) catchRequests(requests []*Request) errorCodes {
 			return ErrCodeTransactionCatch
 		}
 	}
-	return ErrOk
+	return Ok
 }
 
 func (t *Transaction) throwRequests(requests []*Request, num int) {

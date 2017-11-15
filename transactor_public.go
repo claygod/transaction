@@ -28,15 +28,12 @@ type Transactor struct {
 
 // New - create new transactor.
 func New() Transactor {
-	t := Transactor{hasp: stateOpen, Units: make(map[int64]*Unit), lgr: &logger{}}
-
-	//t.lgr.New().Context("TEST", "LOG").Context("Type", ErrLevelError).
-	//	Context("Msg", ErrMsgUnitExist).Context("Unit", 1234242343).Write()
-	return t
+	return Transactor{hasp: stateOpen, Units: make(map[int64]*Unit), lgr: &logger{}}
 }
 
 func (t *Transactor) AddUnit(id int64) errorCodes {
 	if !t.catch() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Method", "AddUnit").Write()
 		return ErrCodeTransactorCatch
 	}
 	defer t.throw()
@@ -47,27 +44,33 @@ func (t *Transactor) AddUnit(id int64) errorCodes {
 		if !ok {
 			t.Units[id] = newUnit()
 			t.m.Unlock()
-			return ErrOk
+			return Ok
 		}
 		t.m.Unlock()
 	}
-	t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
+	go t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
 	return ErrCodeUnitExist
 }
 
-/*
-func (t *Transactor) GetUnit(id int64) (*Unit, errorCodes) {
-	u, ok := t.Units[id]
-	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Method", "GetUnit").Write()
-		return nil, ErrCodeUnitExist
+func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
+	if !t.catch() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Method", "DelUnit").Write()
+		return nil, ErrCodeTransactorCatch
 	}
-	return u, ErrOk
+	defer t.throw()
+	if u, ok := t.Units[id]; ok {
+		if accList, err := u.delAllAccounts(); err != Ok {
+			go t.lgr.New().Context("Msg", err).Context("Unit", id).Context("Method", "DelUnit").Write()
+			return accList, err
+		}
+	}
+
+	return nil, Ok
 }
-*/
 
 func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 	if !t.catch() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "Total").Write()
 		return nil, ErrCodeTransactorCatch
 	}
 	defer t.throw()
@@ -75,25 +78,35 @@ func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 	for k, u := range t.Units {
 		ttl[k] = u.total()
 	}
-	return ttl, ErrOk
+	return ttl, Ok
 }
 
 func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
+	if !t.catch() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Method", "TotalUnit").Write()
+		return nil, ErrCodeTransactorCatch
+	}
+	defer t.throw()
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
+		go t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
 		return nil, ErrCodeUnitNotExist
 	}
-	return u.total(), ErrOk
+	return u.total(), Ok
 }
 
 func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
+	if !t.catch() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Account", key).Context("Method", "TotalAccount").Write()
+		return permitError, ErrCodeTransactorCatch
+	}
+	defer t.throw()
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalAccount").Write()
-		return -1, ErrCodeUnitNotExist
+		go t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalAccount").Write()
+		return permitError, ErrCodeUnitNotExist
 	}
-	return u.getAccount(key).total(), ErrOk
+	return u.getAccount(key).total(), Ok
 }
 
 func (t *Transactor) Start() bool {
@@ -103,6 +116,7 @@ func (t *Transactor) Start() bool {
 		}
 		runtime.Gosched()
 	}
+	go t.lgr.New().Context("Msg", errMsgTransactorNotStart).Context("Method", "Start").Write()
 	return false
 }
 
@@ -113,17 +127,20 @@ func (t *Transactor) Stop() bool {
 		}
 		runtime.Gosched()
 	}
+	go t.lgr.New().Context("Msg", errMsgTransactorNotStop).Context("Method", "Stop").Write()
 	return false
 }
 
 func (t *Transactor) Load(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
 	if hasp == stateClosed && !t.Stop() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotStop).Context("Method", "Load").Write()
 		return ErrCodeTransactorStop
 	}
 
 	bs, err := ioutil.ReadFile(path)
 	if err != nil {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotReadFile).Context("Path", path).Context("Method", "Load").Write()
 		return ErrCodeLoadReadFile
 	}
 	endLine := []byte(endLineSymbol)
@@ -135,10 +152,12 @@ func (t *Transactor) Load(path string) errorCodes {
 		}
 		id, err := strconv.ParseInt(string(a[0]), 10, 64)
 		if err != nil {
+			go t.lgr.New().Context("Msg", errMsgTransactorParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
 			return ErrCodeLoadStrToInt64
 		}
 		balance, err := strconv.ParseInt(string(a[1]), 10, 64)
 		if err != nil {
+			go t.lgr.New().Context("Msg", errMsgTransactorParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
 			return ErrCodeLoadStrToInt64
 		}
 		u, ok := t.Units[id]
@@ -149,14 +168,16 @@ func (t *Transactor) Load(path string) errorCodes {
 		u.accounts[string(a[2])] = newAccount(balance)
 	}
 	if hasp == stateClosed && !t.Start() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotStart).Context("Method", "Load").Write()
 		return ErrCodeTransactorStart
 	}
-	return ErrOk
+	return Ok
 }
 
 func (t *Transactor) Save(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
 	if hasp == stateClosed && !t.Stop() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotStop).Context("Method", "Save").Write()
 		return ErrCodeTransactorStop
 	}
 
@@ -167,39 +188,14 @@ func (t *Transactor) Save(path string) errorCodes {
 		}
 	}
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotCreateFile).Context("Path", path).Context("Method", "Save").Write()
 		return ErrCodeSaveCreateFile
 	}
 	if hasp == stateClosed && !t.Start() {
+		go t.lgr.New().Context("Msg", errMsgTransactorNotStart).Context("Method", "Save").Write()
 		return ErrCodeTransactorStart
 	}
-	return ErrOk
-}
-
-func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
-	if !t.catch() {
-		return nil, ErrCodeTransactorCatch
-	}
-	defer t.throw()
-	if u, ok := t.Units[id]; ok {
-		if accList, err := u.delAllAccounts(); err != ErrOk {
-			t.lgr.New().Context("Msg", err).Context("Unit", id).Context("Method", "DelUnit").Write()
-			return accList, err
-		}
-	}
-
-	return nil, ErrOk
-}
-
-func (t *Transactor) DelAccount(id int64, key string) errorCodes {
-	if !t.catch() {
-		return ErrCodeTransactorCatch
-	}
-	defer t.throw()
-	if u, ok := t.Units[id]; ok {
-		return u.delAccount(key)
-	}
-	t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Account", key).Context("Method", "DelAccount").Write()
-	return ErrCodeUnitNotExist
+	return Ok
 }
 
 func (t *Transactor) Begin() *Transaction {

@@ -35,7 +35,7 @@ func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 		t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
 		return nil, ErrCodeUnitExist
 	}
-	return u.getAccount(key), ErrOk
+	return u.getAccount(key), Ok
 }
 
 func (t *Transactor) getNEL() []byte {
