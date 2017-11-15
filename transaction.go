@@ -25,16 +25,16 @@ func newTransaction(tn *Transactor) *Transaction {
 
 func (t *Transaction) exeTransaction() errorCodes {
 	if !t.tn.catch() {
-		t.tn.lgr.New().Context("Msg", ErrMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
+		t.tn.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
 		return ErrCodeTransactorCatch
 	}
 	defer t.tn.throw()
 	if err := t.fillTransaction(); err != ErrOk {
-		t.tn.lgr.New().Context("Msg", ErrMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
+		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
 		return err
 	}
 	if err := t.catchTransaction(); err != ErrOk {
-		t.tn.lgr.New().Context("Msg", ErrMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
+		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
 		return err
 	}
 	// credit
@@ -42,7 +42,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 		if res := i.account.creditAtomicFree(i.amount); res < 0 {
 			t.deCredit(t.down, num)
 			t.throwRequests(t.down, num)
-			t.tn.lgr.New().Context("Msg", ErrMsgAccountCredit).Context("Unit", i.id).
+			t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
 				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
 			return ErrCodeTransactionCredit
@@ -105,7 +105,7 @@ func (t *Transaction) catchRequests(requests []*Request) errorCodes {
 	for i, r := range requests {
 		if !r.account.catch() {
 			t.throwRequests(requests, i)
-			t.tn.lgr.New().Context("Msg", ErrMsgAccountNotCatch).Context("Unit", r.id).
+			t.tn.lgr.New().Context("Msg", errMsgAccountNotCatch).Context("Unit", r.id).
 				Context("Account", r.key).Context("Method", "catchRequests").Write()
 			return ErrCodeTransactionCatch
 		}

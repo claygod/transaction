@@ -9,7 +9,7 @@ import (
 	//"fmt"
 	//"log"
 	//"bytes"
-	//	"os"
+	//"os"
 	//"runtime"
 	//"strconv"
 	//"strings"
@@ -32,8 +32,12 @@ func (t *Transactor) throw() {
 func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
+		t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
 		return nil, ErrCodeUnitExist
 	}
 	return u.getAccount(key), ErrOk
+}
+
+func (t *Transactor) getNEL() []byte {
+	return []byte("")
 }

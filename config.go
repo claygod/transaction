@@ -9,6 +9,8 @@ package transactor
 const trialLimit int = 2000000000
 const trialStop int = 64
 const permitError int64 = -9223372036854775806
+const endLineSymbol string = "\n"
+const separatorSymbol string = ";"
 
 type errorCodes int
 
@@ -35,13 +37,14 @@ const (
 )
 
 // Error types
+/*
 const (
 	ErrorTypeExist    string = `Exist`
 	ErrorTypeNotExist string = `Not exist`
 	ErrorTypeNotEmpty string = `Not empty`
 	ErrorTypeNotStop  string = `Not stop`
 )
-
+*/
 // Hasp state
 const (
 	stateOpen = iota
@@ -64,17 +67,17 @@ const (
 
 // Error level
 const (
-	ErrMsgUnitExist           string = `This unit already exists`
-	ErrMsgUnitNotExist        string = `This unit already not exists`
-	ErrMsgAccountExist        string = `This account already exists`
-	ErrMsgAccountNotExist     string = `This account already not exists`
-	ErrMsgAccountNotEmpty     string = `Account is not empty`
-	ErrMsgAccountNotStop      string = `Account does not stop`
-	ErrMsgAccountNotCatch     string = `Not caught account`
-	ErrMsgAccountCredit       string = `Credit transaction error`
-	ErrMsgTransactorNotCatch  string = `Not caught transaction`
-	ErrMsgTransactionNotFill  string = `Not caught transaction`
-	ErrMsgTransactionNotCatch string = `Not caught transaction`
+	errMsgUnitExist    string = `This unit already exists`
+	errMsgUnitNotExist string = `This unit already not exists`
+	// errMsgAccountExist        string = `This account already exists`
+	// errMsgAccountNotExist     string = `This account already not exists`
+	// errMsgAccountNotEmpty     string = `Account is not empty`
+	// errMsgAccountNotStop      string = `Account does not stop`
+	errMsgAccountNotCatch     string = `Not caught account`
+	errMsgAccountCredit       string = `Credit transaction error`
+	errMsgTransactorNotCatch  string = `Not caught transactor`
+	errMsgTransactionNotFill  string = `Not fill transaction`
+	errMsgTransactionNotCatch string = `Not caught transaction`
 )
 
 // Error_UnitExist := errors.New("This unit already exists")

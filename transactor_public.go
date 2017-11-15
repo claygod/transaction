@@ -51,7 +51,7 @@ func (t *Transactor) AddUnit(id int64) errorCodes {
 		}
 		t.m.Unlock()
 	}
-	t.lgr.New().Context("Msg", ErrMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
+	t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
 	return ErrCodeUnitExist
 }
 
@@ -81,7 +81,7 @@ func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
+		t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
 		return nil, ErrCodeUnitNotExist
 	}
 	return u.total(), ErrOk
@@ -90,7 +90,7 @@ func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
 func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
 	u, ok := t.Units[id]
 	if !ok {
-		t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalAccount").Write()
+		t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalAccount").Write()
 		return -1, ErrCodeUnitNotExist
 	}
 	return u.getAccount(key).total(), ErrOk
@@ -126,8 +126,10 @@ func (t *Transactor) Load(path string) errorCodes {
 	if err != nil {
 		return ErrCodeLoadReadFile
 	}
-	for _, str := range bytes.Split(bs, []byte("\r\n")) {
-		a := bytes.Split(str, []byte(";"))
+	endLine := []byte(endLineSymbol)
+	separator := []byte(separatorSymbol)
+	for _, str := range bytes.Split(bs, endLine) {
+		a := bytes.Split(str, separator)
 		if len(a) != 3 {
 			continue
 		}
@@ -161,16 +163,9 @@ func (t *Transactor) Save(path string) errorCodes {
 	var buf bytes.Buffer
 	for id, u := range t.Units {
 		for key, a := range u.accounts {
-			buf.Write([]byte(fmt.Sprintf("%d;%d;%s\r\n", id, a.balance, key)))
+			buf.Write([]byte(fmt.Sprintf("%d%s%d%s%s%s", id, separatorSymbol, a.balance, separatorSymbol, key, endLineSymbol)))
 		}
 	}
-	//file, err := os.Create(path)
-	//if err != nil {
-	//	file.Close()
-	//	return ErrCodeSaveCreateFile //fmt.Print("=!=", err, "=!=")
-	//}
-	//file.Write(buf.Bytes())
-	//file.Close()
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
 		return ErrCodeSaveCreateFile
 	}
@@ -203,7 +198,7 @@ func (t *Transactor) DelAccount(id int64, key string) errorCodes {
 	if u, ok := t.Units[id]; ok {
 		return u.delAccount(key)
 	}
-	t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Account", key).Context("Method", "DelAccount").Write()
+	t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Account", key).Context("Method", "DelAccount").Write()
 	return ErrCodeUnitNotExist
 }
 
