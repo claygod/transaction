@@ -14,7 +14,7 @@ import (
 
 type Account struct {
 	sync.Mutex
-	hasp    int64
+	// hasp    int64
 	counter int64
 	balance int64
 	debt    int64
@@ -50,17 +50,17 @@ func (a *Account) total() int64 {
 }
 
 // --
-
+/*
 func (a *Account) permit() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.CompareAndSwapInt64(&a.hasp, 0, 1) {
+		if atomic.CompareAndSwapInt64(&a.hasp, stateOpen, stateClosed) {
 			return true
 		}
 		runtime.Gosched()
 	}
 	return false
 }
-
+*/
 func (a *Account) catch() bool {
 	if atomic.LoadInt64(&a.counter) < 0 {
 		return false

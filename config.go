@@ -42,6 +42,12 @@ const (
 	ErrorTypeNotStop  string = `Not stop`
 )
 
+// Hasp state
+const (
+	stateOpen = iota
+	stateClosed
+)
+
 // Error level
 const (
 	ErrLayerAccount = 100 * iota

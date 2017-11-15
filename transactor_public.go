@@ -28,7 +28,7 @@ type Transactor struct {
 
 // New - create new transactor.
 func New() Transactor {
-	t := Transactor{hasp: 0, Units: make(map[int64]*Unit), lgr: &logger{}}
+	t := Transactor{hasp: stateOpen, Units: make(map[int64]*Unit), lgr: &logger{}}
 
 	//t.lgr.New().Context("TEST", "LOG").Context("Type", ErrLevelError).
 	//	Context("Msg", ErrMsgUnitExist).Context("Unit", 1234242343).Write()
@@ -98,7 +98,7 @@ func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
 
 func (t *Transactor) Start() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.LoadInt64(&t.hasp) == 1 || atomic.CompareAndSwapInt64(&t.hasp, 0, 1) {
+		if atomic.LoadInt64(&t.hasp) == stateClosed || atomic.CompareAndSwapInt64(&t.hasp, stateOpen, stateClosed) {
 			return true
 		}
 		runtime.Gosched()
@@ -108,7 +108,7 @@ func (t *Transactor) Start() bool {
 
 func (t *Transactor) Stop() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if (atomic.LoadInt64(&t.hasp) == 0 || atomic.CompareAndSwapInt64(&t.hasp, 1, 0)) && atomic.LoadInt64(&t.counter) == 0 {
+		if (atomic.LoadInt64(&t.hasp) == stateOpen || atomic.CompareAndSwapInt64(&t.hasp, stateClosed, stateOpen)) && atomic.LoadInt64(&t.counter) == 0 {
 			return true
 		}
 		runtime.Gosched()
@@ -118,7 +118,7 @@ func (t *Transactor) Stop() bool {
 
 func (t *Transactor) Load(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
-	if hasp == 1 && !t.Stop() {
+	if hasp == stateClosed && !t.Stop() {
 		return ErrCodeTransactorStop
 	}
 
@@ -146,7 +146,7 @@ func (t *Transactor) Load(path string) errorCodes {
 		}
 		u.accounts[string(a[2])] = newAccount(balance)
 	}
-	if hasp == 1 && !t.Start() {
+	if hasp == stateClosed && !t.Start() {
 		return ErrCodeTransactorStart
 	}
 	return ErrOk
@@ -154,7 +154,7 @@ func (t *Transactor) Load(path string) errorCodes {
 
 func (t *Transactor) Save(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
-	if hasp == 1 && !t.Stop() {
+	if hasp == stateClosed && !t.Stop() {
 		return ErrCodeTransactorStop
 	}
 
@@ -174,7 +174,7 @@ func (t *Transactor) Save(path string) errorCodes {
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
 		return ErrCodeSaveCreateFile
 	}
-	if hasp == 1 && !t.Start() {
+	if hasp == stateClosed && !t.Start() {
 		return ErrCodeTransactorStart
 	}
 	return ErrOk
@@ -203,7 +203,7 @@ func (t *Transactor) DelAccount(id int64, key string) errorCodes {
 	if u, ok := t.Units[id]; ok {
 		return u.delAccount(key)
 	}
-	t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Method", "DelAccount").Write()
+	t.lgr.New().Context("Msg", ErrMsgUnitNotExist).Context("Unit", id).Context("Account", key).Context("Method", "DelAccount").Write()
 	return ErrCodeUnitNotExist
 }
 
