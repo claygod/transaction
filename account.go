@@ -8,12 +8,12 @@ import (
 	//"errors"
 	//"log"
 	"runtime"
-	"sync"
+	//"sync"
 	"sync/atomic"
 )
 
 type Account struct {
-	sync.Mutex
+	//sync.Mutex
 	// hasp    int64
 	counter int64
 	balance int64
