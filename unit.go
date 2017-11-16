@@ -46,13 +46,17 @@ func (u *Unit) List() []string {
 */
 func (u *Unit) total() map[string]int64 {
 	t := make(map[string]int64)
+	u.m.Lock()
 	for k, a := range u.accounts {
 		t[k] = a.total()
 	}
+	u.m.Unlock()
 	return t
 }
 
 func (u *Unit) delAccount(key string) errorCodes {
+	u.m.Lock()
+	defer u.m.Unlock()
 	a, ok := u.accounts[key]
 	if !ok {
 		return ErrCodeAccountExist
@@ -63,12 +67,14 @@ func (u *Unit) delAccount(key string) errorCodes {
 	if !a.stop() {
 		return ErrCodeAccountNotStop
 	}
-	u.m.Lock()
+
 	delete(u.accounts, key)
-	u.m.Unlock()
+
 	return Ok
 }
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
+	u.m.Lock()
+	defer u.m.Unlock()
 	if notDel := u.del(); len(notDel) != 0 {
 		return notDel, ErrCodeAccountNotEmpty
 	}

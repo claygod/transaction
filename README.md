@@ -59,6 +59,13 @@ Transaction:
 - BenchmarkTransferSingle-4     	 2000000	       929 ns/op
 - BenchmarkTransferParallel-4   	 3000000	       584 ns/op
 
+BenchmarkCreditSingle-4       	 2000000	       703 ns/op
+BenchmarkCreditParallel-4     	 3000000	       489 ns/op
+BenchmarkDebitSingle-4        	 2000000	       867 ns/op
+BenchmarkDebitParallel-4      	 3000000	       415 ns/op
+BenchmarkTransferSingle-4     	 1000000	      1073 ns/op
+BenchmarkTransferParallel-4   	 2000000	       722 ns/op
+
 - BenchmarkAccountCreditOk-4            	100000000	        15.6 ns/op
 - BenchmarkAccountCreditErr-4           	100000000	        15.2 ns/op
 - BenchmarkAccountCreditAtomOk-4        	100000000	        13.9 ns/op

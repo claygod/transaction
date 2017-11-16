@@ -9,43 +9,6 @@ import (
 	"testing"
 )
 
-func BenchmarkDebitSingle(b *testing.B) {
-	b.StopTimer()
-
-	tr := New()
-	tr.Start()
-	for i := int64(0); i < 65536; i++ {
-		tr.AddUnit(i)
-		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
-	}
-
-	b.StartTimer()
-	for i := 0; i < b.N; i++ {
-		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
-	}
-}
-
-func BenchmarkDebitParallel(b *testing.B) {
-	b.StopTimer()
-
-	tr := New()
-	tr.Start()
-	tr.AddUnit(1234567)
-	for i := int64(0); i < 65536; i++ {
-		tr.AddUnit(i)
-		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
-	}
-
-	i := uint16(0)
-	b.StartTimer()
-	b.RunParallel(func(pb *testing.PB) {
-		for pb.Next() {
-			tr.Begin().Debit(int64(i), "USD", 1).End()
-			i++
-		}
-	})
-}
-
 func BenchmarkCreditSingle(b *testing.B) {
 	b.StopTimer()
 
@@ -79,6 +42,43 @@ func BenchmarkCreditParallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().Credit(int64(i), "USD", 1).End()
+			i++
+		}
+	})
+}
+
+func BenchmarkDebitSingle(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+}
+
+func BenchmarkDebitParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+
+	i := uint16(0)
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.Begin().Debit(int64(i), "USD", 1).End()
 			i++
 		}
 	})

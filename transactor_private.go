@@ -30,14 +30,27 @@ func (t *Transactor) throw() {
 }
 
 func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
-	u, ok := t.Units[id]
+	// sync.Map begin
+	un, ok := t.units.Load(id)
 	if !ok {
-		t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
-		return nil, ErrCodeUnitExist
+		t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
+		return nil, ErrCodeUnitNotExist
 	}
+	u := un.(*Unit)
 	return u.getAccount(key), Ok
+	// sync.Map end
+	/*
+		t.m.Lock()
+		u, ok := t.Units[id]
+		t.m.Unlock()
+		if !ok {
+			t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Account", id).Context("Method", "getAccount").Write()
+			return nil, ErrCodeUnitExist
+		}
+		return u.getAccount(key), Ok
+	*/
 }
 
-func (t *Transactor) getNEL() []byte {
-	return []byte("")
-}
+//func (t *Transactor) getNEL() []byte {
+//	return []byte("")
+//}
