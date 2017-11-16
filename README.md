@@ -52,6 +52,8 @@ Transaction:
 
 ## Bench
 
+Map:
+
 - BenchmarkDebitSingle-4        	 3000000	       647 ns/op
 - BenchmarkDebitParallel-4      	 3000000	       454 ns/op
 - BenchmarkCreditSingle-4       	 2000000	       784 ns/op
@@ -59,12 +61,16 @@ Transaction:
 - BenchmarkTransferSingle-4     	 2000000	       929 ns/op
 - BenchmarkTransferParallel-4   	 3000000	       584 ns/op
 
+sync.Map:
+
 - BenchmarkCreditSingle-4       	 2000000	       703 ns/op
 - BenchmarkCreditParallel-4     	 3000000	       489 ns/op
 - BenchmarkDebitSingle-4        	 2000000	       867 ns/op
 - BenchmarkDebitParallel-4      	 3000000	       415 ns/op
 - BenchmarkTransferSingle-4     	 1000000	      1073 ns/op
 - BenchmarkTransferParallel-4   	 2000000	       722 ns/op
+
+Account:
 
 - BenchmarkAccountCreditOk-4            	100000000	        15.6 ns/op
 - BenchmarkAccountCreditErr-4           	100000000	        15.2 ns/op
