@@ -22,16 +22,16 @@ func newUnit() *Unit {
 }
 
 func (u *Unit) getAccount(key string) *Account {
+	//a, ok := u.accounts[key]
+	//if !ok {
+	u.m.Lock()
 	a, ok := u.accounts[key]
 	if !ok {
-		u.m.Lock()
-		a, ok = u.accounts[key]
-		if !ok {
-			a = newAccount(0)
-			u.accounts[key] = a
-		}
-		u.m.Unlock()
+		a = newAccount(0)
+		u.accounts[key] = a
 	}
+	u.m.Unlock()
+	//}
 	return a
 }
 

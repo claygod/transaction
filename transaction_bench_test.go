@@ -5,9 +5,124 @@ package transactor
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	"sync/atomic"
+	// "sync/atomic"
 	"testing"
 )
+
+func BenchmarkDebitSingle(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+}
+
+func BenchmarkDebitParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
+	}
+
+	i := uint16(0)
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.Begin().Debit(int64(i), "USD", 1).End()
+			i++
+		}
+	})
+}
+
+func BenchmarkCreditSingle(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 9223372036854775).End()
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.Begin().Credit(int64(uint16(i)), "USD", 1).End()
+	}
+}
+
+func BenchmarkCreditParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	tr.Begin().Debit(1234567, "USD", 9223372036854775806).End()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 9223372036854775).End()
+	}
+
+	i := uint16(0)
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.Begin().Credit(int64(i), "USD", 1).End()
+			i++
+		}
+	})
+}
+
+func BenchmarkTransferSingle(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 1000).End()
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.Begin().Credit(int64(uint16(i)), "USD", 1).Debit(int64(uint16(i+1)), "USD", 1).End()
+	}
+}
+
+func BenchmarkTransferParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	tr.AddUnit(1234568)
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 1000).End()
+	}
+
+	i := uint16(0)
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.Begin().Credit(int64(i), "USD", 1).Debit(int64(i+1), "USD", 1).End()
+			i++
+		}
+	})
+}
+
+/*
 
 func BenchmarkMapRead(b *testing.B) {
 	b.StopTimer()
@@ -74,3 +189,4 @@ func BenchmarkAtomicAdd(b *testing.B) {
 		atomic.AddInt64(&m, 1)
 	}
 }
+*/

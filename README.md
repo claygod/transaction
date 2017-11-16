@@ -46,7 +46,18 @@ Transaction:
 - stop (counter)
 - save ("path")
 
+## ToDo
+
+- Демо с роутером: сервер с REST (авторизация и права доступа опущены)
+
 ## Bench
+
+- BenchmarkDebitSingle-4        	 3000000	       647 ns/op
+- BenchmarkDebitParallel-4      	 3000000	       454 ns/op
+- BenchmarkCreditSingle-4       	 2000000	       784 ns/op
+- BenchmarkCreditParallel-4     	 3000000	       435 ns/op
+- BenchmarkTransferSingle-4     	 2000000	       929 ns/op
+- BenchmarkTransferParallel-4   	 3000000	       584 ns/op
 
 - BenchmarkAccountCreditOk-4            	100000000	        15.6 ns/op
 - BenchmarkAccountCreditErr-4           	100000000	        15.2 ns/op

@@ -58,13 +58,15 @@ func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 		return nil, ErrCodeTransactorCatch
 	}
 	defer t.throw()
+	t.m.Lock()
 	if u, ok := t.Units[id]; ok {
 		if accList, err := u.delAllAccounts(); err != Ok {
+			t.m.Unlock()
 			go t.lgr.New().Context("Msg", err).Context("Unit", id).Context("Method", "DelUnit").Write()
 			return accList, err
 		}
 	}
-
+	t.m.Unlock()
 	return nil, Ok
 }
 

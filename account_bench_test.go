@@ -10,7 +10,7 @@ import (
 )
 
 // +++++++
-
+/*
 func BenchmarkAccountCreditAtomFreeOk(b *testing.B) {
 	b.StopTimer()
 	a := newAccount(9223372036854775807)
@@ -37,7 +37,7 @@ func BenchmarkAccountDebitAtomFreeOk(b *testing.B) {
 		a.debitAtomicFree(1)
 	}
 }
-
+*/
 // -==== --
 
 func BenchmarkAccountTotal(b *testing.B) {
