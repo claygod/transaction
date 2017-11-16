@@ -91,7 +91,7 @@ func BenchmarkTransferSingle(b *testing.B) {
 	tr.Start()
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
-		tr.Begin().Debit(i, "USD", 1000).End()
+		tr.Begin().Debit(i, "USD", 100000).End()
 	}
 
 	b.StartTimer()
@@ -109,7 +109,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 	tr.AddUnit(1234568)
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
-		tr.Begin().Debit(i, "USD", 1000).End()
+		tr.Begin().Debit(i, "USD", 100000).End()
 	}
 
 	i := uint16(0)
@@ -117,6 +117,52 @@ func BenchmarkTransferParallel(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().Credit(int64(i), "USD", 1).Debit(int64(i+1), "USD", 1).End()
+			i++
+		}
+	})
+}
+
+func BenchmarkBuySingle(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 100000).End()
+		tr.Begin().Debit(i, "APPLE", 5000).End()
+	}
+
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.Begin().
+			Credit(int64(uint16(i)), "USD", 10).Debit(int64(uint16(i+1)), "USD", 10).
+			Debit(int64(uint16(i)), "APPLE", 2).Credit(int64(uint16(i+1)), "APPLE", 2).
+			End()
+	}
+}
+
+func BenchmarkBuyParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	tr.AddUnit(1234568)
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 100000).End()
+		tr.Begin().Debit(i, "APPLE", 5000).End()
+	}
+
+	i := uint16(0)
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.Begin().
+				Credit(int64(uint16(i)), "USD", 10).Debit(int64(uint16(i+1)), "USD", 10).
+				Debit(int64(uint16(i)), "APPLE", 2).Credit(int64(uint16(i+1)), "APPLE", 2).
+				End()
 			i++
 		}
 	})
