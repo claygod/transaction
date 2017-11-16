@@ -74,12 +74,14 @@ Map:
 
 sync.Map:
 
-- BenchmarkCreditSingle-4       	 2000000	       703 ns/op
-- BenchmarkCreditParallel-4     	 3000000	       489 ns/op
-- BenchmarkDebitSingle-4        	 2000000	       867 ns/op
-- BenchmarkDebitParallel-4      	 3000000	       415 ns/op
-- BenchmarkTransferSingle-4     	 1000000	      1073 ns/op
-- BenchmarkTransferParallel-4   	 2000000	       722 ns/op
+- BenchmarkCreditSingle-4       	 5000000	       358 ns/op
+- BenchmarkCreditParallel-4     	10000000	       225 ns/op
+- BenchmarkDebitSingle-4        	 5000000	       366 ns/op
+- BenchmarkDebitParallel-4      	 5000000	       224 ns/op
+- BenchmarkTransferSingle-4     	 3000000	       559 ns/op
+- BenchmarkTransferParallel-4   	 5000000	       357 ns/op
+- BenchmarkBuySingle-4          	 2000000	       940 ns/op
+- BenchmarkBuyParallel-4        	 2000000	       595 ns/op
 
 Account:
 
