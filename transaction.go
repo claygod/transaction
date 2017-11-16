@@ -7,6 +7,7 @@ package transactor
 //"errors"
 //"log"
 //"fmt"
+//import "sync/atomic"
 
 type Transaction struct {
 	tn   *Transactor
@@ -24,17 +25,21 @@ func newTransaction(tn *Transactor) *Transaction {
 }
 
 func (t *Transaction) exeTransaction() errorCodes {
+	//if atomic.LoadInt64(&t.tn.hasp) == 0 {
 	if !t.tn.catch() {
 		t.tn.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
 		return ErrCodeTransactorCatch
 	}
-	defer t.tn.throw()
+	//atomic.AddInt64(&t.tn.counter, 1)
+	//defer atomic.AddInt64(&t.tn.counter, -1) //t.tn.throw()
 	if err := t.fillTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
+		t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 		return err
 	}
 	if err := t.catchTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
+		t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 		return err
 	}
 	// credit
@@ -45,6 +50,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 			t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
 				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
+			t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 			return ErrCodeTransactionCredit
 		}
 	}
@@ -54,6 +60,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 	}
 	// throw
 	t.throwTransaction()
+	t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 	return Ok
 }
 
