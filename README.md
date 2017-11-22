@@ -24,18 +24,45 @@
 - На одном аккаунте ведётся только один баланс.
 - Баланс исчисляется только в целых числах.
 
+## Usage
 
+### Создание, загрузка, сохранение
 
+### Создание/удаление счёта
 
-Варианты:
-- счёт не удаляется а помечается
-- у счёта счётчик, регистрирующий транзакции
+### Credit/debit of an account
 
-Transaction:
-- Начало транзакции
-- Проведение операций
-- Траблы с удалением аккаунтов и пользователей
-- Конец транзакции
+Credit and debit operations with the account:
+
+```go
+t.Begin().Credit(id), "USD", 1).End()
+```	
+
+```go
+t.Begin().Debit(id), "USD", 1).End()
+```
+
+### Transfer
+
+Пример перевода одного доллара с одного счёта на другой.
+
+```go
+t.Begin().
+	Credit(idFrom), "USD", 1).
+	Debit(idTo), "USD", 1).
+	End()
+```
+
+### Покупка
+
+Покупка, это по сути, два одновременных перевода.
+```go
+// Example of buying two shares of "Apple" for $10
+tr.Begin().
+	Credit(buyerId, "USD", 10).Debit(sellerId), "USD", 10).
+	Debit(sellerId), "APPLE", 2).Credit(buyerId), "APPLE", 2).
+	End()
+```
 
 ## Transactor
 
@@ -74,14 +101,12 @@ Map:
 
 sync.Map:
 
-- BenchmarkCreditSingle-4       	 5000000	       358 ns/op
-- BenchmarkCreditParallel-4     	10000000	       225 ns/op
-- BenchmarkDebitSingle-4        	 5000000	       366 ns/op
-- BenchmarkDebitParallel-4      	 5000000	       224 ns/op
-- BenchmarkTransferSingle-4     	 3000000	       559 ns/op
-- BenchmarkTransferParallel-4   	 5000000	       357 ns/op
-- BenchmarkBuySingle-4          	 2000000	       940 ns/op
-- BenchmarkBuyParallel-4        	 2000000	       595 ns/op
+- BenchmarkCreditSingle-4       	 2000000	       703 ns/op
+- BenchmarkCreditParallel-4     	 3000000	       489 ns/op
+- BenchmarkDebitSingle-4        	 2000000	       867 ns/op
+- BenchmarkDebitParallel-4      	 3000000	       415 ns/op
+- BenchmarkTransferSingle-4     	 1000000	      1073 ns/op
+- BenchmarkTransferParallel-4   	 2000000	       722 ns/op
 
 Account:
 
