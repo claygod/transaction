@@ -35,11 +35,11 @@
 Credit and debit operations with the account:
 
 ```go
-t.Begin().Credit(id), "USD", 1).End()
+t.Begin().Credit(id, "USD", 1).End()
 ```	
 
 ```go
-t.Begin().Debit(id), "USD", 1).End()
+t.Begin().Debit(id, "USD", 1).End()
 ```
 
 ### Transfer
@@ -48,8 +48,8 @@ t.Begin().Debit(id), "USD", 1).End()
 
 ```go
 t.Begin().
-	Credit(idFrom), "USD", 1).
-	Debit(idTo), "USD", 1).
+	Credit(idFrom, "USD", 1).
+	Debit(idTo, "USD", 1).
 	End()
 ```
 
@@ -59,8 +59,8 @@ t.Begin().
 ```go
 // Example of buying two shares of "Apple" for $10
 tr.Begin().
-	Credit(buyerId, "USD", 10).Debit(sellerId), "USD", 10).
-	Debit(sellerId), "APPLE", 2).Credit(buyerId), "APPLE", 2).
+	Credit(buyerId, "USD", 10).Debit(sellerId, "USD", 10).
+	Debit(sellerId, "APPLE", 2).Credit(buyerId, "APPLE", 2).
 	End()
 ```
 
@@ -107,6 +107,8 @@ sync.Map:
 - BenchmarkDebitParallel-4      	 3000000	       415 ns/op
 - BenchmarkTransferSingle-4     	 1000000	      1073 ns/op
 - BenchmarkTransferParallel-4   	 2000000	       722 ns/op
+- BenchmarkBuySingle-4          	 1000000	      1867 ns/op
+- BenchmarkBuyParallel-4        	 1000000	      1431 ns/op
 
 Account:
 
