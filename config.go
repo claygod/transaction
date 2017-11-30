@@ -27,6 +27,7 @@ const (
 const (
 	ErrCodeUnitExist errorCodes = 400 + iota
 	ErrCodeUnitNotExist
+	ErrCodeUnitNotEmpty
 	ErrCodeAccountExist
 	ErrCodeAccountNotExist
 	ErrCodeAccountNotEmpty

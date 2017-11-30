@@ -59,7 +59,7 @@ func (u *Unit) delAccount(key string) errorCodes {
 	defer u.m.Unlock()
 	a, ok := u.accounts[key]
 	if !ok {
-		return ErrCodeAccountExist
+		return ErrCodeAccountNotExist
 	}
 	if a.total() != 0 {
 		return ErrCodeAccountNotEmpty
@@ -75,12 +75,13 @@ func (u *Unit) delAccount(key string) errorCodes {
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	u.m.Lock()
 	defer u.m.Unlock()
-	if notDel := u.del(); len(notDel) != 0 {
-		return notDel, ErrCodeAccountNotEmpty
-	}
 	if notStop := u.stop(); len(notStop) != 0 {
 		return notStop, ErrCodeAccountNotStop
 	}
+	if notDel := u.del(); len(notDel) != 0 {
+		return notDel, ErrCodeUnitNotEmpty
+	}
+
 	return nil, Ok
 }
 
@@ -92,6 +93,16 @@ func (u *Unit) del() []string {
 		}
 	}
 	return notDel
+}
+
+func (u *Unit) start() []string {
+	notStart := make([]string, 0, len(u.accounts))
+	for k, a := range u.accounts {
+		if !a.start() {
+			notStart = append(notStart, k)
+		}
+	}
+	return notStart
 }
 
 func (u *Unit) stop() []string {
