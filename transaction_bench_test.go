@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func BenchmarkCreditSingle(b *testing.B) {
+func BenchmarkCreditSequence(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()
@@ -47,7 +47,7 @@ func BenchmarkCreditParallel(b *testing.B) {
 	})
 }
 
-func BenchmarkDebitSingle(b *testing.B) {
+func BenchmarkDebitSequence(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()
@@ -84,7 +84,7 @@ func BenchmarkDebitParallel(b *testing.B) {
 	})
 }
 
-func BenchmarkTransferSingle(b *testing.B) {
+func BenchmarkTransferSequence(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()
@@ -122,7 +122,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 	})
 }
 
-func BenchmarkBuySingle(b *testing.B) {
+func BenchmarkBuySequence(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()

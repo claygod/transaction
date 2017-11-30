@@ -26,7 +26,7 @@ func newAccount(amount int64) *Account {
 	return k
 }
 
-func (a *Account) creditAtomicFree(amount int64) int64 {
+func (a *Account) credit(amount int64) int64 {
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b - amount
@@ -41,7 +41,7 @@ func (a *Account) creditAtomicFree(amount int64) int64 {
 	return permitError
 }
 
-func (a *Account) debitAtomicFree(amount int64) int64 {
+func (a *Account) debit(amount int64) int64 {
 	return atomic.AddInt64(&a.balance, amount)
 }
 
@@ -100,4 +100,4 @@ func (a *Account) stop() bool {
 	return false
 }
 
-type AccountState [2]int64
+// type AccountState [2]int64

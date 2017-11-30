@@ -7,7 +7,6 @@ package transactor
 //"errors"
 //"log"
 //"fmt"
-//import "sync/atomic"
 
 type Transaction struct {
 	tn   *Transactor
@@ -25,48 +24,42 @@ func newTransaction(tn *Transactor) *Transaction {
 }
 
 func (t *Transaction) exeTransaction() errorCodes {
-	//if atomic.LoadInt64(&t.tn.hasp) == 0 {
 	if !t.tn.catch() {
 		t.tn.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
 		return ErrCodeTransactorCatch
 	}
-	//atomic.AddInt64(&t.tn.counter, 1)
-	//defer atomic.AddInt64(&t.tn.counter, -1) //t.tn.throw()
+	defer t.tn.throw()
 	if err := t.fillTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
-		t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 		return err
 	}
 	if err := t.catchTransaction(); err != Ok {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
-		t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 		return err
 	}
 	// credit
 	for num, i := range t.down {
-		if res := i.account.creditAtomicFree(i.amount); res < 0 {
+		if res := i.account.credit(i.amount); res < 0 {
 			t.deCredit(t.down, num)
 			t.throwRequests(t.down, num)
 			t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
 				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
-			t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 			return ErrCodeTransactionCredit
 		}
 	}
 	// debit
 	for _, i := range t.up {
-		i.account.debitAtomicFree(i.amount)
+		i.account.debit(i.amount)
 	}
 	// throw
 	t.throwTransaction()
-	t.tn.throw() //atomic.AddInt64(&t.tn.counter, -1)
 	return Ok
 }
 
 func (t *Transaction) deCredit(r []*Request, num int) {
 	for i := 0; i < num; i++ {
-		r[i].account.debitAtomicFree(r[i].amount)
+		r[i].account.debit(r[i].amount)
 	}
 }
 
