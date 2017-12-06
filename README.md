@@ -90,6 +90,15 @@ tr.Begin().
 
 ## Bench
 
+- BenchmarkCreditSequence-4     	 5000000	       358 ns/op
+- BenchmarkCreditParallel-4     	10000000	       230 ns/op
+- BenchmarkDebitSequence-4      	 5000000	       350 ns/op
+- BenchmarkDebitParallel-4      	10000000	       228 ns/op
+- BenchmarkTransferSequence-4   	 3000000	       547 ns/op
+- BenchmarkTransferParallel-4   	 5000000	       369 ns/op
+- BenchmarkBuySequence-4        	 2000000	       935 ns/op
+- BenchmarkBuyParallel-4        	 2000000	       613 ns/op
+
 Map:
 
 - BenchmarkDebitSingle-4        	 3000000	       647 ns/op
