@@ -9,39 +9,42 @@ import (
 	"testing"
 )
 
-func TestTransfer(t *testing.T) {
+func TestCreditPrepare(t *testing.T) {
 	tr := New()
 	//tr.Load("test.tdb")
 	tr.Start()
-	//ta.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
-	tr.AddUnit(14760464)
-	tr.AddUnit(2674560)
-	/*
-		for i := int64(1); i < 10; i++ {
-			tr.AddUnit(i)
-			if err := tr.Begin().Debit(i, "USD", 2).End(); err != ErrOk {
-				t.Error(err)
-			}
-		}
-	*/
-	if err := tr.Begin().Debit(14760464, "USD", 11).End(); err != Ok {
-		t.Error(err)
+	tn := tr.Begin()
+	tn = tn.Credit(123, "USD", 5)
+	if len(tn.down) != 1 {
+		t.Error("When preparing a transaction, the credit operation is lost.")
 	}
-	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != Ok {
-		t.Error(err)
+	if tn.down[0].amount != 5 {
+		t.Error("In the lending operation, the amount.")
 	}
-	//t.Error("------", ta.Begin().Credit(2674560, "USD", 9).End())
-	if err := tr.Begin().Credit(2674560, "USD", 2).End(); err != Ok {
-		t.Error(err)
+	if tn.down[0].id != 123 {
+		t.Error("In the lending operation, the ID.")
 	}
-	tr.Save("test.tdb")
+	if tn.down[0].key != "USD" {
+		t.Error("In the lending operation, the name of the value.")
+	}
+}
+
+func TestDebitPrepare(t *testing.T) {
+	tr := New()
 	//tr.Load("test.tdb")
-
-	if err := tr.Begin().
-		Credit(2674560, "USD", 4).
-		Debit(14760464, "USD", 4).
-		End(); err != Ok {
-		t.Error(err)
+	tr.Start()
+	tn := tr.Begin()
+	tn = tn.Debit(123, "USD", 5)
+	if len(tn.up) != 1 {
+		t.Error("When preparing a transaction, the debit operation is lost.")
 	}
-
+	if tn.up[0].amount != 5 {
+		t.Error("In the debit operation, the amount.")
+	}
+	if tn.up[0].id != 123 {
+		t.Error("In the debit operation, the ID.")
+	}
+	if tn.up[0].key != "USD" {
+		t.Error("In the debit operation, the name of the value.")
+	}
 }
