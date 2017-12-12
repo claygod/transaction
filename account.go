@@ -17,7 +17,7 @@ type Account struct {
 	// hasp    int64
 	counter int64
 	balance int64
-	debt    int64
+	// debt    int64
 }
 
 // newAccount - create new account.
@@ -30,10 +30,13 @@ func (a *Account) credit(amount int64) int64 {
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b - amount
-		//if nb > b { // variable overflow
-		//	return permitError
-		//}
-		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		// if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		//	return nb
+		// }
+		if nb < 0 {
+			return nb
+		}
+		if atomic.CompareAndSwapInt64(&a.balance, b, nb) {
 			return nb
 		}
 		runtime.Gosched()
@@ -61,6 +64,8 @@ func (a *Account) permit() bool {
 	return false
 }
 */
+
+// catch - ловим разрешение на проведение операций с аккаунтом
 func (a *Account) catch() bool {
 	if atomic.LoadInt64(&a.counter) < 0 {
 		return false
@@ -68,7 +73,7 @@ func (a *Account) catch() bool {
 	if atomic.AddInt64(&a.counter, 1) > 0 {
 		return true
 	}
-	atomic.AddInt64(&a.counter, permitError/2)
+	atomic.AddInt64(&a.counter, -1)
 	return false
 }
 
@@ -82,7 +87,8 @@ func (a *Account) start() bool {
 		if c >= 0 {
 			return true
 		}
-		if atomic.CompareAndSwapInt64(&a.counter, c, 0) {
+		// the variable `c` is expected to be `permitError`
+		if atomic.CompareAndSwapInt64(&a.counter, permitError, 0) {
 			return true
 		}
 		runtime.Gosched()

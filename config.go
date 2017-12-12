@@ -4,13 +4,15 @@ package transactor
 // Config
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-const trialLimit int = 2000000000
+const trialLimitConst int = 2000000000
 const trialStop int = 64
 const permitError int64 = -9223372036854775806
 const endLineSymbol string = "\n"
 const separatorSymbol string = ";"
 
 type errorCodes int
+
+var trialLimit int = trialLimitConst
 
 // Hasp state
 const (

@@ -23,6 +23,13 @@ func TestAccountCredit(t *testing.T) {
 	if a.credit(51) >= 0 {
 		t.Error("There must be a negative result")
 	}
+
+	if a.credit(1) < 0 {
+		t.Error("A positive result was expected")
+	}
+	//if a.credit(1) == permitError {
+	//	t.Error("Account must not be blocked! The number of waiting cycles exceeded.")
+	//}
 }
 
 func TestAccountDebit(t *testing.T) {
@@ -49,6 +56,14 @@ func TestAccountCath(t *testing.T) {
 	if a.catch(); a.counter != 2 {
 		t.Error("Account counter error")
 	}
+	a.counter = -1
+	if a.catch() {
+		t.Error("There must be an answer `false`")
+	}
+	a.counter = 1
+	if !a.catch() {
+		t.Error("There must be an answer `true`")
+	}
 }
 
 func TestAccountThrow(t *testing.T) {
@@ -61,10 +76,24 @@ func TestAccountThrow(t *testing.T) {
 
 func TestAccountStart(t *testing.T) {
 	a := newAccount(100)
-	a.counter = permitError
-	if !a.start() {
+	trialLimit = 200
+	a.counter = -1
+	if a.start() {
 		t.Error("Could not launch this account")
 	}
+	a.counter = 1
+	if !a.start() {
+		t.Error("The account already has a positive counter and the function should return the `true`")
+	}
+	a.counter = 0
+	if !a.start() {
+		t.Error("The account is already running and the function should return the` true`")
+	}
+	a.counter = permitError
+	if !a.start() {
+		t.Error("Account counter is in a position that allows launch. The launch is not carried out erroneously.")
+	}
+	trialLimit = trialLimitConst
 }
 
 func TestAccountStop(t *testing.T) {
