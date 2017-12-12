@@ -1,5 +1,8 @@
 # transaction
 
+[![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
+[![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
+
 Библиотека оперирует только целыми числами. Если вы хотите работать, к примеру, с сотыми долями (центы в долларах), умножайте всё на 100. Например, полтора доллара, это будет 150.
 Ограничение на максимальный размер счёта: 2 в 63 степени (9,223,372,036,854,775,807). Для примера: на счёте может лежать сумма не больше $92,233,720,368,547,758.07
 
