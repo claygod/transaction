@@ -5,6 +5,7 @@ package transactor
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
+	//"runtime"
 	"testing"
 )
 
@@ -27,9 +28,24 @@ func TestAccountCredit(t *testing.T) {
 	if a.credit(1) < 0 {
 		t.Error("A positive result was expected")
 	}
+	if b := a.credit(1); b != 48 {
+		t.Error("Awaiting 48 and received:", b)
+	}
 	//if a.credit(1) == permitError {
 	//	t.Error("Account must not be blocked! The number of waiting cycles exceeded.")
 	//}
+	/*
+		// Этот тест может быть не проходить
+		trialLimit = trialStop
+		for i := 0; i < 50; i++ {
+			go a.debit(1)
+			//runtime.Gosched()
+		}
+		if x := a.credit(5); x != permitError {
+			t.Error(x)
+		}
+		trialLimit = trialLimitConst
+	*/
 }
 
 func TestAccountDebit(t *testing.T) {
@@ -44,7 +60,7 @@ func TestAccountTotal(t *testing.T) {
 	a.credit(1)
 	a.debit(1)
 	if a.total() != 100 {
-		t.Error("Balance error")
+		t.Error("Balance error", a.total())
 	}
 }
 
@@ -98,12 +114,13 @@ func TestAccountStart(t *testing.T) {
 
 func TestAccountStop(t *testing.T) {
 	a := newAccount(100)
+	trialLimit = 200
 	if !a.stop() {
 		t.Error("Could not stop this account")
 	}
-	// This part of the test should be run only with a small value of the constant "trialLimit"
-	// a.counter = 1
-	// if a.stop() {
-	// 	t.Error("Could not stop this account22")
-	// }
+	a.counter = 1
+	if a.stop() {
+		t.Error("Could not stop this account22")
+	}
+	trialLimit = trialLimitConst
 }

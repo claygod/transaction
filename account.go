@@ -98,7 +98,7 @@ func (a *Account) start() bool {
 
 func (a *Account) stop() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.LoadInt64(&a.counter) < 0 || atomic.CompareAndSwapInt64(&a.counter, 0, permitError) {
+		if atomic.LoadInt64(&a.counter) == permitError || atomic.CompareAndSwapInt64(&a.counter, 0, permitError) {
 			return true
 		}
 		runtime.Gosched()
