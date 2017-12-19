@@ -93,6 +93,20 @@ tr.Begin().
 
 ## Bench
 
+i5-6600k:
+
+BenchmarkAccountTotal-4       	2000000000	         0.27 ns/op
+- BenchmarkCreditSequence-4     	 5000000	       365 ns/op
+- BenchmarkCreditParallel-4     	10000000	       181 ns/op
+- BenchmarkDebitSequence-4      	 5000000	       350 ns/op
+- BenchmarkDebitParallel-4      	10000000	       184 ns/op
+- BenchmarkTransferSequence-4   	 3000000	       539 ns/op
+- BenchmarkTransferParallel-4   	 5000000	       311 ns/op
+- BenchmarkBuySequence-4        	 2000000	       956 ns/op
+- BenchmarkBuyParallel-4        	 3000000	       503 ns/op
+
+i3-6320:
+
 - BenchmarkCreditSequence-4     	 5000000	       358 ns/op
 - BenchmarkCreditParallel-4     	10000000	       230 ns/op
 - BenchmarkDebitSequence-4      	 5000000	       350 ns/op
