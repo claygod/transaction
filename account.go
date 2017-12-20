@@ -82,12 +82,13 @@ func (a *Account) throw() {
 }
 
 func (a *Account) start() bool {
+	var currentCounter int64
 	for i := trialLimit; i > trialStop; i-- {
-		c := atomic.LoadInt64(&a.counter)
-		if c >= 0 {
+		currentCounter = atomic.LoadInt64(&a.counter)
+		if currentCounter >= 0 {
 			return true
 		}
-		// the variable `c` is expected to be `permitError`
+		// the variable `currentCounter` is expected to be `permitError`
 		if atomic.CompareAndSwapInt64(&a.counter, permitError, 0) {
 			return true
 		}
@@ -97,13 +98,31 @@ func (a *Account) start() bool {
 }
 
 func (a *Account) stop() bool {
+	var currentCounter int64
+
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.LoadInt64(&a.counter) == permitError || atomic.CompareAndSwapInt64(&a.counter, 0, permitError) {
+		currentCounter = atomic.LoadInt64(&a.counter)
+		switch {
+		case currentCounter == 0:
+			if atomic.CompareAndSwapInt64(&a.counter, 0, permitError) {
+				return true
+			}
+		case currentCounter > 0:
+			atomic.CompareAndSwapInt64(&a.counter, currentCounter, currentCounter+permitError)
+		case currentCounter == permitError:
 			return true
 		}
 		runtime.Gosched()
 	}
+	currentCounter = atomic.LoadInt64(&a.counter)
+	if currentCounter < 0 && currentCounter > permitError {
+		atomic.AddInt64(&a.counter, -permitError)
+	}
 	return false
+}
+
+func (a *Account) stopUnsafe() {
+	atomic.StoreInt64(&a.counter, permitError)
 }
 
 // type AccountState [2]int64

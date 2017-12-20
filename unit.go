@@ -72,6 +72,18 @@ func (u *Unit) delAccount(key string) errorCodes {
 
 	return Ok
 }
+
+func (u *Unit) delAccountUnsafe(key string) errorCodes {
+	u.m.Lock()
+	defer u.m.Unlock()
+	_, ok := u.accounts[key]
+	if !ok {
+		return ErrCodeAccountNotExist
+	}
+	delete(u.accounts, key)
+
+	return Ok
+}
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	u.m.Lock()
 	defer u.m.Unlock()
