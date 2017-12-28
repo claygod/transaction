@@ -10,9 +10,10 @@ package transactor
 
 func newTransaction(tn *Transactor) *Transaction {
 	t := &Transaction{
-		tn:   tn,
-		down: make([]*Request, 0),
-		up:   make([]*Request, 0),
+		tn: tn,
+		//down: make([]*Request, 0),
+		//up:   make([]*Request, 0),
+		reqs: make([]*Request, 0),
 	}
 	return t
 }
@@ -31,39 +32,64 @@ func (t *Transaction) exeTransaction() errorCodes {
 		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
 		return err
 	}
-	// credit
-	for num, i := range t.down {
-		if res := i.account.credit(i.amount); res < 0 {
-			t.deCredit(t.down, num)
-			t.throwRequests(t.down, num)
+	// addition
+	for num, i := range t.reqs {
+		if res := i.account.addition(i.amount); res < 0 {
+			t.deReq(t.reqs, num)
+			t.throwRequests(t.reqs, num)
 			t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
 				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
 			return ErrCodeTransactionCredit
 		}
 	}
-	// debit
-	for _, i := range t.up {
-		i.account.debit(i.amount)
-	}
+	/*
+		// credit
+		for num, i := range t.down {
+			if res := i.account.credit(i.amount); res < 0 {
+				t.deCredit(t.down, num)
+				t.throwRequests(t.down, num)
+				t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
+					Context("Account", i.key).Context("Amount", i.amount).
+					Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
+				return ErrCodeTransactionCredit
+			}
+		}
+		// debit
+		for _, i := range t.up {
+			i.account.debit(i.amount)
+		}
+	*/
 	// throw
 	t.throwTransaction()
 	return Ok
 }
 
+/*
 func (t *Transaction) deCredit(r []*Request, num int) {
 	for i := 0; i < num; i++ {
 		r[i].account.debit(r[i].amount)
 	}
 }
+*/
+func (t *Transaction) deReq(r []*Request, num int) {
+	for i := 0; i < num; i++ {
+		r[i].account.addition(-r[i].amount)
+	}
+}
 
 func (t *Transaction) fillTransaction() errorCodes {
-	if err := t.fillRequests(t.down); err != Ok {
+	if err := t.fillRequests(t.reqs); err != Ok {
 		return err
 	}
-	if err := t.fillRequests(t.up); err != Ok {
-		return err
-	}
+	/*
+		if err := t.fillRequests(t.down); err != Ok {
+			return err
+		}
+		if err := t.fillRequests(t.up); err != Ok {
+			return err
+		}
+	*/
 	return Ok
 }
 
@@ -80,19 +106,23 @@ func (t *Transaction) fillRequests(requests []*Request) errorCodes {
 }
 
 func (t *Transaction) catchTransaction() errorCodes {
-	if err := t.catchRequests(t.down); err != Ok {
+	if err := t.catchRequests(t.reqs); err != Ok {
 		return err
 	}
-	if err := t.catchRequests(t.up); err != Ok {
-		t.throwRequests(t.down, len(t.down))
-		return err
-	}
+	/*
+		if err := t.catchRequests(t.down); err != Ok {
+			return err
+		}
+		if err := t.catchRequests(t.up); err != Ok {
+			t.throwRequests(t.down, len(t.down))
+			return err
+		}
+	*/
 	return Ok
 }
 
 func (t *Transaction) throwTransaction() {
-	t.throwRequests(t.down, len(t.down))
-	t.throwRequests(t.up, len(t.up))
+	t.throwRequests(t.reqs, len(t.reqs))
 }
 
 func (t *Transaction) catchRequests(requests []*Request) errorCodes {

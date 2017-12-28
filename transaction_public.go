@@ -9,18 +9,21 @@ package transactor
 //"fmt"
 
 type Transaction struct {
-	tn   *Transactor
-	down []*Request
-	up   []*Request
+	tn *Transactor
+	//down []*Request
+	//up   []*Request
+	reqs []*Request
 }
 
 func (t *Transaction) Debit(customer int64, account string, count int64) *Transaction {
-	t.up = append(t.up, &Request{id: customer, key: account, amount: count})
+	//t.up = append(t.up, &Request{id: customer, key: account, amount: count})
+	t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: count})
 	return t
 }
 
 func (t *Transaction) Credit(customer int64, account string, count int64) *Transaction {
-	t.down = append(t.down, &Request{id: customer, key: account, amount: count})
+	//t.down = append(t.down, &Request{id: customer, key: account, amount: count})
+	t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: -count})
 	return t
 }
 

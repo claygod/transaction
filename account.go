@@ -26,6 +26,25 @@ func newAccount(amount int64) *Account {
 	return k
 }
 
+func (a *Account) addition(amount int64) int64 {
+	for i := trialLimit; i > trialStop; i-- {
+		b := atomic.LoadInt64(&a.balance)
+		nb := b + amount
+		// if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		//	return nb
+		// }
+		if nb < 0 {
+			return nb
+		}
+		if atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+			return nb
+		}
+		runtime.Gosched()
+	}
+	return permitError
+}
+
+/*
 func (a *Account) credit(amount int64) int64 {
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
@@ -47,23 +66,10 @@ func (a *Account) credit(amount int64) int64 {
 func (a *Account) debit(amount int64) int64 {
 	return atomic.AddInt64(&a.balance, amount)
 }
-
+*/
 func (a *Account) total() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
-
-// --
-/*
-func (a *Account) permit() bool {
-	for i := trialLimit; i > trialStop; i-- {
-		if atomic.CompareAndSwapInt64(&a.hasp, stateOpen, stateClosed) {
-			return true
-		}
-		runtime.Gosched()
-	}
-	return false
-}
-*/
 
 // catch - ловим разрешение на проведение операций с аккаунтом
 func (a *Account) catch() bool {

@@ -14,20 +14,21 @@ func TestCreditPrepare(t *testing.T) {
 	tr.Start()
 	tn := tr.Begin()
 	tn = tn.Credit(123, "USD", 5)
-	if len(tn.down) != 1 {
+	if len(tn.reqs) != 1 {
 		t.Error("When preparing a transaction, the credit operation is lost.")
 	}
-	if tn.down[0].amount != 5 {
+	if tn.reqs[0].amount != -5 {
 		t.Error("In the lending operation, the amount.")
 	}
-	if tn.down[0].id != 123 {
+	if tn.reqs[0].id != 123 {
 		t.Error("In the lending operation, the ID.")
 	}
-	if tn.down[0].key != "USD" {
+	if tn.reqs[0].key != "USD" {
 		t.Error("In the lending operation, the name of the value.")
 	}
 }
 
+/*
 func TestDebitPrepare(t *testing.T) {
 	tr := New()
 	tr.Start()
@@ -46,3 +47,4 @@ func TestDebitPrepare(t *testing.T) {
 		t.Error("In the debit operation, the name of the value.")
 	}
 }
+*/

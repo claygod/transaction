@@ -11,6 +11,28 @@ import (
 
 // +++++++
 /*
+func BenchmarkChannelIn(b *testing.B) {
+	b.StopTimer()
+	ch := make(chan int, 100000005)
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		ch <- 1
+	}
+}
+
+func BenchmarkChannelOut(b *testing.B) {
+	b.StopTimer()
+	ch := make(chan int, 100000005)
+	for i := 0; i < 100000000; i++ {
+		ch <- 1
+	}
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		<-ch
+	}
+}
+
+
 func BenchmarkAccountCreditAtomFreeOk(b *testing.B) {
 	b.StopTimer()
 	a := newAccount(9223372036854775807)

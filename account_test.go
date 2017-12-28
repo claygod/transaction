@@ -11,24 +11,24 @@ import (
 
 func TestAccountAdd(t *testing.T) {
 	a := newAccount(100)
-	if a.debit(50) != 150 {
+	if a.addition(50) != 150 {
 		t.Error("Error adding")
 	}
 }
 
 func TestAccountCredit(t *testing.T) {
 	a := newAccount(100)
-	if a.credit(50) != 50 {
+	if a.addition(-50) != 50 {
 		t.Error("Account incorrectly performed a credit operation")
 	}
-	if a.credit(51) >= 0 {
+	if a.addition(-51) >= 0 {
 		t.Error("There must be a negative result")
 	}
 
-	if a.credit(1) < 0 {
+	if a.addition(-1) < 0 {
 		t.Error("A positive result was expected")
 	}
-	if b := a.credit(1); b != 48 {
+	if b := a.addition(-1); b != 48 {
 		t.Error("Awaiting 48 and received:", b)
 	}
 	//if a.credit(1) == permitError {
@@ -50,15 +50,15 @@ func TestAccountCredit(t *testing.T) {
 
 func TestAccountDebit(t *testing.T) {
 	a := newAccount(100)
-	if a.debit(50) != 150 {
+	if a.addition(50) != 150 {
 		t.Error("Account incorrectly performed a debit operation")
 	}
 }
 
 func TestAccountTotal(t *testing.T) {
 	a := newAccount(100)
-	a.credit(1)
-	a.debit(1)
+	a.addition(-1)
+	a.addition(1)
 	if a.total() != 100 {
 		t.Error("Balance error", a.total())
 	}
