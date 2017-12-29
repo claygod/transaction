@@ -2,9 +2,9 @@ LICENSE
 
 Copyright (c) 2017 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-Permission is hereby granted, to any person obtaining a copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including the rights to use, copy, modify, merge, publish, distribute copies of
-the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, to any person obtaining a copy of this software and associated documentation files
+(the "Software"), to deal in the Software, including the rights to use, copy, modify, merge, publish, distribute copies
+of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice (or reference to this permission notice) shall be included in all copies or portions of the Software.
 
