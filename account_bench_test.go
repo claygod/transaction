@@ -81,4 +81,14 @@ func BenchmarkAccountStartStop(b *testing.B) {
 	}
 }
 
+func BenchmarkAccountAddition(b *testing.B) {
+	b.StopTimer()
+	a := newAccount(1)
+	a.start()
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		a.addition(1)
+	}
+}
+
 // --

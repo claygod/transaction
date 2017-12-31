@@ -27,6 +27,7 @@ func newAccount(amount int64) *Account {
 }
 
 func (a *Account) addition(amount int64) int64 {
+
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount

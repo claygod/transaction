@@ -7,6 +7,7 @@ package transactor
 const trialLimitConst int = 2000000000
 const trialStop int = 64
 const permitError int64 = -9223372036854775806
+const usualNumTransaction = 4
 const endLineSymbol string = "\n"
 const separatorSymbol string = ";"
 
