@@ -11,19 +11,13 @@ package transactor
 func newTransaction(tn *Transactor) *Transaction {
 	t := &Transaction{
 		tn:   tn,
+		up:   make([]*Request, 0, usualNumTransaction),
 		reqs: make([]*Request, 0, usualNumTransaction),
 	}
 	return t
 }
 
-func newTransaction2(tn *Transactor, reqs []*Request) *Transaction {
-	t := &Transaction{
-		tn:   tn,
-		reqs: reqs,
-	}
-	return t
-}
-
+/**/
 func (t *Transaction) exeTransaction() errorCodes {
 	if !t.tn.catch() {
 		t.tn.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
@@ -72,7 +66,7 @@ func (t *Transaction) rollback(num int) {
 
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
-		a, err := t.tn.getAccount(r.id, r.key)
+		a, err := t.tn.getAccount2(r.id, r.key)
 		if err != Ok {
 			// NOTE: log in method getAccount
 			return err

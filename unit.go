@@ -11,7 +11,7 @@ import (
 )
 
 type Unit struct {
-	m        sync.Mutex
+	sync.Mutex
 	accounts map[string]*Account
 }
 
@@ -22,41 +22,33 @@ func newUnit() *Unit {
 }
 
 func (u *Unit) getAccount(key string) *Account {
-	//a, ok := u.accounts[key]
-	//if !ok {
-	u.m.Lock()
 	a, ok := u.accounts[key]
 	if !ok {
-		a = newAccount(0)
-		u.accounts[key] = a
+		u.Lock()
+		defer u.Unlock()
+
+		a, ok = u.accounts[key]
+		if !ok {
+			a = newAccount(0)
+			u.accounts[key] = a
+		}
 	}
-	u.m.Unlock()
-	//}
 	return a
 }
 
-/*
-func (u *Unit) List() []string {
-	lst := make([]string, 0, len(u.accounts))
-	for k, _ := range u.accounts {
-		lst = append(lst, k)
-	}
-	return lst
-}
-*/
 func (u *Unit) total() map[string]int64 {
 	t := make(map[string]int64)
-	u.m.Lock()
+	u.Lock()
 	for k, a := range u.accounts {
 		t[k] = a.total()
 	}
-	u.m.Unlock()
+	u.Unlock()
 	return t
 }
 
 func (u *Unit) delAccount(key string) errorCodes {
-	u.m.Lock()
-	defer u.m.Unlock()
+	u.Lock()
+	defer u.Unlock()
 	a, ok := u.accounts[key]
 	if !ok {
 		return ErrCodeAccountNotExist
@@ -74,8 +66,8 @@ func (u *Unit) delAccount(key string) errorCodes {
 }
 
 func (u *Unit) delAccountUnsafe(key string) errorCodes {
-	u.m.Lock()
-	defer u.m.Unlock()
+	u.Lock()
+	defer u.Unlock()
 	_, ok := u.accounts[key]
 	if !ok {
 		return ErrCodeAccountNotExist
@@ -85,8 +77,8 @@ func (u *Unit) delAccountUnsafe(key string) errorCodes {
 	return Ok
 }
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
-	u.m.Lock()
-	defer u.m.Unlock()
+	u.Lock()
+	defer u.Unlock()
 	if notStop := u.stop(); len(notStop) != 0 {
 		return notStop, ErrCodeAccountNotStop
 	}

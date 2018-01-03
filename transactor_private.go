@@ -19,6 +19,7 @@ func (t *Transactor) throw() {
 	atomic.AddInt64(&t.counter, -1)
 }
 
+/*
 func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	un, ok := t.units.Load(id)
 	if !ok {
@@ -26,5 +27,13 @@ func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 		return nil, ErrCodeUnitNotExist
 	}
 	u := un.(*Unit)
+	return u.getAccount(key), Ok
+}
+*/
+func (t *Transactor) getAccount2(id int64, key string) (*Account, errorCodes) {
+	u := t.storage.getUnit(id)
+	if u == nil {
+		return nil, ErrCodeUnitNotExist
+	}
 	return u.getAccount(key), Ok
 }

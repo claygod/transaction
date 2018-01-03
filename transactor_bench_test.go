@@ -21,12 +21,12 @@ func BenchmarkCreditSequence(b *testing.B) {
 	u := 0
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		//tr.Begin().Credit(int64(uint16(i)), "USD", 1).End()
+		tr.Begin().Credit(int64(uint16(i)), "USD", 1).End()
 
-		reqs := []*Request{
-			&Request{id: int64(uint16(u)), key: "USD", amount: -1},
-		}
-		newTransaction2(&tr, reqs).exeTransaction()
+		//reqs := []*Request{
+		//	&Request{id: int64(uint16(u)), key: "USD", amount: -1},
+		//}
+		//newTransaction2(&tr, reqs).exeTransaction()
 		u++
 	}
 }
@@ -49,10 +49,11 @@ func BenchmarkCreditParallel(b *testing.B) {
 		for pb.Next() {
 			//tr.Begin().Credit(int64(uint16(i)), "USD", 1).End()
 			//i++
-			reqs := []*Request{
-				&Request{id: int64(uint16(u)), key: "USD", amount: -1},
-			}
-			newTransaction2(&tr, reqs).exeTransaction()
+			//reqs := []*Request{
+			//	&Request{id: int64(uint16(u)), key: "USD", amount: -1},
+			//}
+			//newTransaction2(&tr, reqs).exeTransaction()
+			tr.Begin().Credit(int64(uint16(u)), "USD", 1).End()
 			u++
 		}
 	})
@@ -134,7 +135,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 	})
 }
 
-func BenchmarkBuyPreparationTransactionSequence(b *testing.B) {
+func BenchmarkBuyUnsafeSequence(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()
@@ -153,17 +154,16 @@ func BenchmarkBuyPreparationTransactionSequence(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		reqs := []*Request{
 			&Request{id: int64(uint16(u)), key: "USD", amount: -10},
+			&Request{id: int64(uint16(u + 1)), key: "APPLE", amount: -2},
 			&Request{id: int64(uint16(u + 1)), key: "USD", amount: 10},
 			&Request{id: int64(uint16(u)), key: "APPLE", amount: 2},
-			&Request{id: int64(uint16(u + 1)), key: "APPLE", amount: -2},
 		}
-		newTransaction2(&tr, reqs).exeTransaction()
-
+		Unsafe(&tr, reqs)
 		u += 2
 	}
 }
 
-func BenchmarkBuyPreparationTransactionParallel(b *testing.B) {
+func BenchmarkBuyUnsafenParallel(b *testing.B) {
 	b.StopTimer()
 
 	tr := New()
@@ -182,17 +182,18 @@ func BenchmarkBuyPreparationTransactionParallel(b *testing.B) {
 		for pb.Next() {
 			reqs := []*Request{
 				&Request{id: int64(uint16(u)), key: "USD", amount: -10},
+				&Request{id: int64(uint16(u + 1)), key: "APPLE", amount: -2},
 				&Request{id: int64(uint16(u + 1)), key: "USD", amount: 10},
 				&Request{id: int64(uint16(u)), key: "APPLE", amount: 2},
-				&Request{id: int64(uint16(u + 1)), key: "APPLE", amount: -2},
 			}
-			newTransaction2(&tr, reqs).exeTransaction()
+			Unsafe(&tr, reqs)
 
 			u += 2
 		}
 	})
 }
 
+/**/
 func BenchmarkBuySequence(b *testing.B) {
 	b.StopTimer()
 
@@ -246,6 +247,7 @@ func BenchmarkBuyParallel(b *testing.B) {
 	})
 }
 
+/*
 func BenchmarkBuyPreparation2Parallel(b *testing.B) {
 	b.StopTimer()
 
@@ -300,6 +302,68 @@ func BenchmarkBuyPreparation1Parallel(b *testing.B) {
 			u += 2
 		}
 	})
+}
+*/
+func BenchmarkTrGetAccount2Sequence(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 100000000).End()
+		tr.Begin().Debit(i, "APPLE", 5000000).End()
+	}
+	u := 0
+	b.StartTimer()
+
+	for i := 0; i < b.N; i++ {
+		//tn.reqs[0].account
+		tr.getAccount2(int64(uint16(u)), "USD")
+		u += 2
+	}
+}
+
+func BenchmarkTrGetAccount2Parallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 100000000).End()
+		tr.Begin().Debit(i, "APPLE", 5000000).End()
+	}
+	u := 0
+
+	b.StartTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.getAccount2(int64(uint16(u)), "USD")
+			u += 2
+		}
+	})
+}
+
+func BenchmarkUnitGetAccountSequence(b *testing.B) {
+	b.StopTimer()
+
+	un := newUnit()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		un.getAccount("USD")
+	}
+
+	b.StartTimer()
+	u := 0
+	for i := 0; i < b.N; i++ {
+		//tn.reqs[0].account
+		un.getAccount("USD")
+		u += 2
+	}
 }
 
 /*

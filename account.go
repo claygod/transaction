@@ -13,11 +13,8 @@ import (
 )
 
 type Account struct {
-	//sync.Mutex
-	// hasp    int64
 	counter int64
 	balance int64
-	// debt    int64
 }
 
 // newAccount - create new account.
@@ -27,47 +24,30 @@ func newAccount(amount int64) *Account {
 }
 
 func (a *Account) addition(amount int64) int64 {
+	b := atomic.LoadInt64(&a.balance)
+	nb := b + amount
+
+	if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		return nb
+	}
 
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount
-		// if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+			return nb
+		}
+		//if nb < 0 {
 		//	return nb
-		// }
-		if nb < 0 {
-			return nb
-		}
-		if atomic.CompareAndSwapInt64(&a.balance, b, nb) {
-			return nb
-		}
+		//}
+		//if atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+		//	return nb
+		//}
 		runtime.Gosched()
 	}
 	return permitError
 }
 
-/*
-func (a *Account) credit(amount int64) int64 {
-	for i := trialLimit; i > trialStop; i-- {
-		b := atomic.LoadInt64(&a.balance)
-		nb := b - amount
-		// if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
-		//	return nb
-		// }
-		if nb < 0 {
-			return nb
-		}
-		if atomic.CompareAndSwapInt64(&a.balance, b, nb) {
-			return nb
-		}
-		runtime.Gosched()
-	}
-	return permitError
-}
-
-func (a *Account) debit(amount int64) int64 {
-	return atomic.AddInt64(&a.balance, amount)
-}
-*/
 func (a *Account) total() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
@@ -131,5 +111,3 @@ func (a *Account) stop() bool {
 func (a *Account) stopUnsafe() {
 	atomic.StoreInt64(&a.counter, permitError)
 }
-
-// type AccountState [2]int64

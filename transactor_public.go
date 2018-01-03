@@ -6,9 +6,9 @@ package transactor
 
 import (
 	"bytes"
-	"fmt"
+	//"fmt"
 	"io/ioutil"
-	"os"
+	//"os"
 	"runtime"
 	"strconv"
 	"sync"
@@ -19,13 +19,18 @@ type Transactor struct {
 	m       sync.Mutex
 	counter int64
 	hasp    int64
-	units   sync.Map
+	//units   sync.Map
 	lgr     *logger
+	storage *Storage
 }
 
 // New - create new transactor.
 func New() Transactor {
-	return Transactor{hasp: stateOpen, lgr: &logger{}}
+	return Transactor{
+		hasp:    stateOpen,
+		lgr:     &logger{},
+		storage: newStorage(),
+	}
 }
 
 func (t *Transactor) AddUnit(id int64) errorCodes {
@@ -35,7 +40,7 @@ func (t *Transactor) AddUnit(id int64) errorCodes {
 	}
 	defer t.throw()
 
-	if _, ok := t.units.LoadOrStore(id, newUnit()); ok {
+	if !t.storage.addUnit(id) { // _, ok := t.units.LoadOrStore(id, newUnit()); ok
 		go t.lgr.New().Context("Msg", errMsgUnitExist).Context("Unit", id).Context("Method", "AddUnit").Write()
 		return ErrCodeUnitExist
 	}
@@ -49,19 +54,20 @@ func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 	}
 	defer t.throw()
 
-	un, ok := t.units.Load(id)
+	un, ok := t.storage.delUnit(id) // t.units.Load(id)
 	if !ok {
 		go t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "DelUnit").Write()
 		return nil, ErrCodeUnitNotExist
 	}
-	u := un.(*Unit)
-	if accList, err := u.delAllAccounts(); err != Ok {
+	//u := un //.(*Unit)
+	if accList, err := un.delAllAccounts(); err != Ok {
 		go t.lgr.New().Context("Msg", err).Context("Unit", id).Context("Method", "DelUnit").Write()
 		return accList, err
 	}
 	return nil, Ok
 }
 
+/*
 func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 	if !t.catch() {
 		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "Total").Write()
@@ -80,7 +86,7 @@ func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
 
 	return ttl, Ok
 }
-
+*/
 func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	if !t.catch() {
 		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Method", "TotalUnit").Write()
@@ -88,14 +94,14 @@ func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	}
 	defer t.throw()
 
-	un, ok := t.units.Load(id)
-	if !ok {
+	un := t.storage.getUnit(id) // t.units.Load(id)
+	if un == nil {
 		go t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Method", "TotalUnit").Write()
 		return nil, ErrCodeUnitNotExist
 	}
-	u := un.(*Unit)
+	//u := un //.(*Unit)
 
-	return u.total(), Ok
+	return un.total(), Ok
 }
 
 func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
@@ -105,13 +111,13 @@ func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
 	}
 	defer t.throw()
 
-	un, ok := t.units.Load(id)
-	if !ok {
+	un := t.storage.getUnit(id) // t.units.Load(id)
+	if un == nil {
 		go t.lgr.New().Context("Msg", errMsgUnitNotExist).Context("Unit", id).Context("Account", key).Context("Method", "TotalAccount").Write()
 		return permitError, ErrCodeUnitNotExist
 	}
-	u := un.(*Unit)
-	return u.getAccount(key).total(), Ok
+	//u := un.(*Unit)
+	return un.getAccount(key).total(), Ok
 }
 
 func (t *Transactor) Start() bool {
@@ -165,10 +171,11 @@ func (t *Transactor) Load(path string) errorCodes {
 			go t.lgr.New().Context("Msg", errMsgTransactorParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
 			return ErrCodeLoadStrToInt64
 		}
-		un, _ := t.units.LoadOrStore(id, newUnit())
-		u := un.(*Unit)
+		//un, _ := t.units.LoadOrStore(id, newUnit())
+		un := t.storage.getUnit(id) // t.units.Load(id)
+		//u := un.(*Unit)
 
-		u.accounts[string(a[2])] = newAccount(balance)
+		un.accounts[string(a[2])] = newAccount(balance)
 	}
 	if hasp == stateClosed && !t.Start() {
 		go t.lgr.New().Context("Msg", errMsgTransactorNotStart).Context("Method", "Load").Write()
@@ -177,6 +184,7 @@ func (t *Transactor) Load(path string) errorCodes {
 	return Ok
 }
 
+/*
 func (t *Transactor) Save(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
 	if hasp == stateClosed && !t.Stop() {
@@ -205,7 +213,7 @@ func (t *Transactor) Save(path string) errorCodes {
 	}
 	return Ok
 }
-
+*/
 func (t *Transactor) Begin() *Transaction {
 	return newTransaction(t)
 }
