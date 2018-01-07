@@ -108,6 +108,6 @@ func (a *Account) stop() bool {
 	return false
 }
 
-func (a *Account) stopUnsafe() {
-	atomic.StoreInt64(&a.counter, permitError)
-}
+//func (a *Account) stopUnsafe() {
+//	atomic.StoreInt64(&a.counter, permitError)
+//}

@@ -28,6 +28,19 @@ func TestCreditPrepare(t *testing.T) {
 	}
 }
 
+func TestTransactionExe(t *testing.T) {
+	tr := New()
+	tr.Start()
+	tr.AddUnit(123)
+
+	tn := tr.Begin()
+	tn = tn.Debit(123, "USD", 5)
+	if res := tn.exeTransaction(); res != Ok {
+		t.Error(res)
+	}
+
+}
+
 /*
 func TestDebitPrepare(t *testing.T) {
 	tr := New()

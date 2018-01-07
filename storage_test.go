@@ -48,6 +48,16 @@ func TestStorageDel(t *testing.T) {
 	}
 }
 
+func TestStorageId(t *testing.T) {
+	s := newStorage()
+	if s.id(1) != 1 {
+		t.Error("The lower bits are incorrectly recalculated")
+	}
+	if s.id(1048575) != 65535 {
+		t.Error("Improperly recalculated high-order bits")
+	}
+}
+
 func TestSectionNew(t *testing.T) {
 	if newSection() == nil {
 		t.Error("Error creating `Section`")
