@@ -41,6 +41,27 @@ func TestTransactionExe(t *testing.T) {
 
 }
 
+func TestTransactionRollback(t *testing.T) {
+	tr := New()
+	tr.Start()
+	tr.AddUnit(123)
+	tr.Begin().Debit(123, "USD", 7).End()
+
+	tn := newTransaction(&tr)
+	tn.Credit(123, "USD", 1)
+	tn.fill()
+	//tn.catch()
+	tn.exeTransaction()
+	if num, _ := tr.TotalAccount(123, "USD"); num != 6 {
+		t.Error("Credit operation is not carried out")
+	}
+	tn.rollback(1)
+	if num, _ := tr.TotalAccount(123, "USD"); num != 7 {
+		t.Error("Not rolled back")
+	}
+
+}
+
 /*
 func TestDebitPrepare(t *testing.T) {
 	tr := New()

@@ -5,7 +5,8 @@ package transactor
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 //"errors"
-//"log"
+// import "log"
+
 //"fmt"
 
 func newTransaction(tn *Transactor) *Transaction {
@@ -60,6 +61,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 
 func (t *Transaction) rollback(num int) {
 	for i := 0; i < num; i++ {
+		//log.Print("~~~~~~~~~", i)
 		t.reqs[i].account.addition(-t.reqs[i].amount)
 	}
 }
