@@ -9,7 +9,7 @@ package transactor
 //"fmt"
 
 type Transaction struct {
-	tn *Transactor
+	tr *Transactor
 	//down []*Request
 	up   []*Request
 	reqs []*Request
@@ -43,14 +43,16 @@ func (t *Transaction) End() errorCodes {
 	return t.exeTransaction()
 }
 
+/*
 func Unsafe(tn *Transactor, reqs []*Request) errorCodes {
 	t := &Transaction{
-		tn:   tn,
+		tr:   tn,
 		up:   make([]*Request, 0, 0),
 		reqs: reqs,
 	}
 	return t.exeTransaction()
 }
+*/
 
 type Request struct {
 	id      int64

@@ -158,7 +158,8 @@ func BenchmarkBuyUnsafeSequence(b *testing.B) {
 			&Request{id: int64(uint16(u + 1)), key: "USD", amount: 10},
 			&Request{id: int64(uint16(u)), key: "APPLE", amount: 2},
 		}
-		Unsafe(&tr, reqs)
+		//Unsafe(&tr, reqs)
+		tr.Unsafe(reqs)
 		u += 2
 	}
 }
@@ -186,8 +187,8 @@ func BenchmarkBuyUnsafenParallel(b *testing.B) {
 				&Request{id: int64(uint16(u + 1)), key: "USD", amount: 10},
 				&Request{id: int64(uint16(u)), key: "APPLE", amount: 2},
 			}
-			Unsafe(&tr, reqs)
-
+			//Unsafe(&tr, reqs)
+			tr.Unsafe(reqs)
 			u += 2
 		}
 	})

@@ -67,26 +67,6 @@ func (t *Transactor) DelUnit(id int64) ([]string, errorCodes) {
 	return nil, Ok
 }
 
-/*
-func (t *Transactor) Total() (map[int64]map[string]int64, errorCodes) {
-	if !t.catch() {
-		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "Total").Write()
-		return nil, ErrCodeTransactorCatch
-	}
-	defer t.throw()
-
-	ttl := make(map[int64]map[string]int64)
-
-	t.units.Range(func(id, u interface{}) bool {
-		id2 := id.(int64)
-		u2 := u.(*Unit)
-		ttl[id2] = u2.total()
-		return true
-	})
-
-	return ttl, Ok
-}
-*/
 func (t *Transactor) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	if !t.catch() {
 		go t.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Unit", id).Context("Method", "TotalUnit").Write()
@@ -213,7 +193,18 @@ func (t *Transactor) Save(path string) errorCodes {
 	}
 	return Ok
 }
+
+
 */
 func (t *Transactor) Begin() *Transaction {
 	return newTransaction(t)
+}
+
+func (t *Transactor) Unsafe(reqs []*Request) errorCodes {
+	tn := &Transaction{
+		tr:   t,
+		up:   make([]*Request, 0, 0),
+		reqs: reqs,
+	}
+	return tn.exeTransaction()
 }

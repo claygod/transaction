@@ -11,7 +11,7 @@ package transactor
 
 func newTransaction(tn *Transactor) *Transaction {
 	t := &Transaction{
-		tn:   tn,
+		tr:   tn,
 		up:   make([]*Request, 0, usualNumTransaction),
 		reqs: make([]*Request, 0, usualNumTransaction),
 	}
@@ -20,11 +20,11 @@ func newTransaction(tn *Transactor) *Transaction {
 
 /**/
 func (t *Transaction) exeTransaction() errorCodes {
-	if !t.tn.catch() {
-		t.tn.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
+	if !t.tr.catch() {
+		t.tr.lgr.New().Context("Msg", errMsgTransactorNotCatch).Context("Method", "exeTransaction").Write()
 		return ErrCodeTransactorCatch
 	}
-	defer t.tn.throw()
+	defer t.tr.throw()
 
 	// fill
 	//for i, r := range t.reqs {
@@ -35,12 +35,12 @@ func (t *Transaction) exeTransaction() errorCodes {
 	//	t.reqs[i].account = a
 	//}
 	if err := t.fill(); err != Ok {
-		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
+		t.tr.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
 		return err
 	}
 
 	if err := t.catch(); err != Ok {
-		t.tn.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
+		t.tr.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
 		return err
 	}
 	// addition
@@ -48,7 +48,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 		if res := i.account.addition(i.amount); res < 0 {
 			t.rollback(num)
 			t.throw(len(t.reqs))
-			t.tn.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
+			t.tr.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
 				Context("Account", i.key).Context("Amount", i.amount).
 				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
 			return ErrCodeTransactionCredit
@@ -68,7 +68,7 @@ func (t *Transaction) rollback(num int) {
 
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
-		a, err := t.tn.getAccount2(r.id, r.key)
+		a, err := t.tr.getAccount2(r.id, r.key)
 		if err != Ok {
 			// NOTE: log in method getAccount
 			return err
@@ -82,7 +82,7 @@ func (t *Transaction) catch() errorCodes {
 	for i, r := range t.reqs {
 		if !r.account.catch() {
 			t.throw(i)
-			t.tn.lgr.New().Context("Msg", errMsgAccountNotCatch).Context("Unit", r.id).
+			t.tr.lgr.New().Context("Msg", errMsgAccountNotCatch).Context("Unit", r.id).
 				Context("Account", r.key).Context("Method", "catch").Write()
 			return ErrCodeTransactionCatch
 		}
