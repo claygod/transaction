@@ -6,9 +6,9 @@ package transactor
 
 import (
 	"bytes"
-	//"fmt"
+	"fmt"
 	"io/ioutil"
-	//"os"
+	"os"
 	"runtime"
 	"strconv"
 	"sync"
@@ -151,9 +151,11 @@ func (t *Transactor) Load(path string) errorCodes {
 			go t.lgr.New().Context("Msg", errMsgTransactorParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
 			return ErrCodeLoadStrToInt64
 		}
-		//un, _ := t.units.LoadOrStore(id, newUnit())
-		un := t.storage.getUnit(id) // t.units.Load(id)
-		//u := un.(*Unit)
+		un := t.storage.getUnit(id)
+		if un == nil {
+			t.storage.addUnit(id)
+			un = t.storage.getUnit(id)
+		}
 
 		un.accounts[string(a[2])] = newAccount(balance)
 	}
@@ -164,7 +166,6 @@ func (t *Transactor) Load(path string) errorCodes {
 	return Ok
 }
 
-/*
 func (t *Transactor) Save(path string) errorCodes {
 	hasp := atomic.LoadInt64(&t.hasp)
 	if hasp == stateClosed && !t.Stop() {
@@ -173,15 +174,13 @@ func (t *Transactor) Save(path string) errorCodes {
 	}
 
 	var buf bytes.Buffer
-
-	t.units.Range(func(id, u interface{}) bool {
-		id2 := id.(int64)
-		u2 := u.(*Unit)
-		for key, a := range u2.accounts {
-			buf.Write([]byte(fmt.Sprintf("%d%s%d%s%s%s", id2, separatorSymbol, a.balance, separatorSymbol, key, endLineSymbol)))
+	for i := uint64(0); i < storageNumber; i++ {
+		for id, u := range t.storage.data[i].data {
+			for key, balance := range u.totalUnsave() {
+				buf.Write([]byte(fmt.Sprintf("%d%s%d%s%s%s", id, separatorSymbol, balance, separatorSymbol, key, endLineSymbol)))
+			}
 		}
-		return true
-	})
+	}
 
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
 		go t.lgr.New().Context("Msg", errMsgTransactorNotCreateFile).Context("Path", path).Context("Method", "Save").Write()
@@ -194,8 +193,6 @@ func (t *Transactor) Save(path string) errorCodes {
 	return Ok
 }
 
-
-*/
 func (t *Transactor) Begin() *Transaction {
 	return newTransaction(t)
 }

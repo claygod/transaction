@@ -46,6 +46,14 @@ func (u *Unit) total() map[string]int64 {
 	return t
 }
 
+func (u *Unit) totalUnsave() map[string]int64 {
+	t := make(map[string]int64)
+	for k, a := range u.accounts {
+		t[k] = a.total()
+	}
+	return t
+}
+
 func (u *Unit) delAccount(key string) errorCodes {
 	u.Lock()
 	defer u.Unlock()

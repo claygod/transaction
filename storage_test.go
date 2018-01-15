@@ -11,7 +11,7 @@ func TestStorageNew(t *testing.T) {
 	if s == nil {
 		t.Error("Error creating `Storage`")
 	}
-	if uint64(len(s.data2)) != storageNumber {
+	if uint64(len(s.data)) != storageNumber {
 		t.Error("Error in the number of sections")
 	}
 }

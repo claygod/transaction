@@ -17,29 +17,29 @@ const storageNumber uint64 = 1 << storageDegree
 const storageShift uint64 = 64 - storageDegree
 
 type Storage struct {
-	data2 [storageNumber]*Section
+	data [storageNumber]*Section
 }
 
-// newStorage - create new Storage.
+// newStorage - create new Storage
 func newStorage() *Storage {
 	s := &Storage{}
 	for i := uint64(0); i < storageNumber; i++ {
-		s.data2[i] = newSection()
+		s.data[i] = newSection()
 	}
 	return s
 }
 
 func (s *Storage) addUnit(id int64) bool {
-	section := s.data2[(uint64(id)<<storageShift)>>storageShift]
+	section := s.data[(uint64(id)<<storageShift)>>storageShift]
 	return section.addUnit(id)
 }
 
 func (s *Storage) getUnit(id int64) *Unit {
-	return s.data2[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
+	return s.data[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
 }
 
 func (s *Storage) delUnit(id int64) (*Unit, bool) {
-	return s.data2[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
+	return s.data[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
 }
 
 func (s *Storage) id(id int64) uint64 {
@@ -51,7 +51,7 @@ type Section struct {
 	data map[int64]*Unit
 }
 
-// newSection - create new Section.
+// newSection - create new Section
 func newSection() *Section {
 	s := &Section{
 		data: make(map[int64]*Unit),
@@ -70,6 +70,7 @@ func (s *Section) lock() bool {
 	return false
 }
 */
+
 func (s *Section) addUnit(id int64) bool {
 	s.Lock()
 	defer s.Unlock()
