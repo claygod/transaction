@@ -102,7 +102,7 @@ func (t *Transactor) TotalAccount(id int64, key string) (int64, errorCodes) {
 
 func (t *Transactor) Start() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.LoadInt64(&t.hasp) == stateClosed || atomic.CompareAndSwapInt64(&t.hasp, stateOpen, stateClosed) {
+		if atomic.LoadInt64(&t.hasp) == stateOpen || atomic.CompareAndSwapInt64(&t.hasp, stateClosed, stateOpen) {
 			return true
 		}
 		runtime.Gosched()
@@ -113,7 +113,7 @@ func (t *Transactor) Start() bool {
 
 func (t *Transactor) Stop() bool {
 	for i := trialLimit; i > trialStop; i-- {
-		if (atomic.LoadInt64(&t.hasp) == stateOpen || atomic.CompareAndSwapInt64(&t.hasp, stateClosed, stateOpen)) && atomic.LoadInt64(&t.counter) == 0 {
+		if atomic.LoadInt64(&t.hasp) == stateClosed || (atomic.LoadInt64(&t.counter) == 0 && atomic.CompareAndSwapInt64(&t.hasp, stateOpen, stateClosed)) {
 			return true
 		}
 		runtime.Gosched()

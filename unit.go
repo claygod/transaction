@@ -73,6 +73,7 @@ func (u *Unit) delAccount(key string) errorCodes {
 	return Ok
 }
 
+/*
 func (u *Unit) delAccountUnsafe(key string) errorCodes {
 	u.Lock()
 	defer u.Unlock()
@@ -84,6 +85,8 @@ func (u *Unit) delAccountUnsafe(key string) errorCodes {
 
 	return Ok
 }
+*/
+
 func (u *Unit) delAllAccounts() ([]string, errorCodes) {
 	u.Lock()
 	defer u.Unlock()

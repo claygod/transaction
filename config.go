@@ -4,7 +4,7 @@ package transactor
 // Config
 // Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-const trialLimitConst int = 2000000000
+const trialLimitConst int = 2000000000 //29999999
 const trialStop int = 64
 const permitError int64 = -9223372036854775806
 const usualNumTransaction = 4
@@ -17,8 +17,8 @@ var trialLimit int = trialLimitConst
 
 // Hasp state
 const (
-	stateOpen = iota
-	stateClosed
+	stateClosed = iota
+	stateOpen
 )
 
 // No error code

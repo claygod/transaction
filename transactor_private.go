@@ -9,7 +9,7 @@ import (
 )
 
 func (t *Transactor) catch() bool {
-	if atomic.LoadInt64(&t.hasp) > 0 {
+	if atomic.LoadInt64(&t.hasp) == stateOpen {
 		atomic.AddInt64(&t.counter, 1)
 		return true
 	}

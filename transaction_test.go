@@ -33,10 +33,10 @@ func TestTransactionExe(t *testing.T) {
 	tr.Start()
 	tr.AddUnit(123)
 
-	tn := tr.Begin()
-	tn = tn.Debit(123, "USD", 5)
-	if res := tn.exeTransaction(); res != Ok {
-		t.Error(res)
+	//tn := tr.Begin().Debit(123, "USD", 5)
+
+	if tr.Begin().Debit(123, "USD", 5).End() != Ok {
+		t.Error("Error executing a transaction")
 	}
 
 }

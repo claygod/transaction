@@ -45,6 +45,39 @@ func TestTransfer(t *testing.T) {
 
 }
 
+func TestTransactorStart(t *testing.T) {
+	//trialLimit = 200
+	tr := New()
+
+	if !tr.Start() {
+		t.Error("Now the start is possible!")
+	}
+	//tr.Stop()
+	//t.Error(tr.Stop())
+	//t.Error(tr.hasp)
+	//t.Error(tr.counter)
+	//t.Error(stateClosed)
+
+	//trialLimit = trialLimitConst
+}
+
+func TestTransactorStop(t *testing.T) {
+	trialLimit = 200
+	tr := New()
+
+	if !tr.Start() {
+		t.Error("Now the start is possible!")
+	}
+
+	if !tr.Stop() {
+		t.Error("Now the stop is possible!")
+	}
+
+	trialLimit = trialLimitConst
+}
+
+/*
+ */
 func TestTransactorUnsafe(t *testing.T) {
 	tr := New()
 	tr.Start()
@@ -81,6 +114,46 @@ func TestTransactorAddUnit(t *testing.T) {
 	if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
 		t.Error("Invalid transaction result")
 	}
+
+	if tr.AddUnit(123) == Ok {
+		t.Error("You can not re-add a unit")
+	}
+}
+
+func TestTransactorDelUnit(t *testing.T) {
+	tr := New()
+	tr.Start()
+	if _, err := tr.DelUnit(123); err == Ok {
+		t.Error("Removed non-existent unit")
+	}
+
+	tr.AddUnit(123)
+
+	if _, err := tr.DelUnit(123); err != Ok {
+		t.Error("The unit has not been deleted")
+	}
+}
+
+func TestTransactorTotallUnit(t *testing.T) {
+	tr := New()
+	tr.Start()
+	tr.AddUnit(123)
+	tr.Begin().Debit(123, "USD", 1).End()
+
+	arr, err := tr.TotalUnit(123)
+
+	if err != Ok {
+		t.Error("Failed to get information on the unit")
+	}
+
+	if b, ok := arr["USD"]; ok != true || b != 1 {
+		t.Error("The received information on the unit is erroneous")
+	}
+
+	if _, err := tr.TotalUnit(456); err == Ok {
+		t.Error("A unit does not exist, there must be an error")
+	}
+
 }
 
 func TestTransactorSave(t *testing.T) {
@@ -118,6 +191,7 @@ func TestTransactorSave(t *testing.T) {
 		t.Error("The account balance does not match")
 	}
 	os.Remove(path)
+	tr.Stop()
 }
 
 func TestTransactorLoad(t *testing.T) {
@@ -126,11 +200,10 @@ func TestTransactorLoad(t *testing.T) {
 	tr.Start()
 	tr.AddUnit(123)
 	tr.Begin().Debit(123, "USD", 7).End()
-	//tr.AddUnit(456)
-	//tr.Begin().Debit(456, "USD", 12).End()
+	// --- tr.AddUnit(456)
+	// -- tr.Begin().Debit(456, "USD", 12).End()
 	tr.Save(path)
 	tr.Stop()
-
 	tr2 := New()
 	tr2.Load(path)
 	tr2.Start()
@@ -144,6 +217,5 @@ func TestTransactorLoad(t *testing.T) {
 	if res != Ok {
 		t.Error(fmt.Sprintf("Error in the downloaded account (%d)", res))
 	}
-
 	// os.Remove(path)
 }
