@@ -14,6 +14,10 @@ func TestAccountAdd(t *testing.T) {
 	if a.addition(50) != 150 {
 		t.Error("Error adding")
 	}
+
+	if a.addition(-200) != -50 {
+		t.Error("Error adding")
+	}
 }
 
 func TestAccountCredit(t *testing.T) {

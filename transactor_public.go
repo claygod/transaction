@@ -197,6 +197,7 @@ func (t *Transactor) Begin() *Transaction {
 	return newTransaction(t)
 }
 
+/*
 func (t *Transactor) Unsafe(reqs []*Request) errorCodes {
 	tn := &Transaction{
 		tr:   t,
@@ -205,3 +206,4 @@ func (t *Transactor) Unsafe(reqs []*Request) errorCodes {
 	}
 	return tn.exeTransaction()
 }
+*/

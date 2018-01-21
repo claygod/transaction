@@ -135,6 +135,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 	})
 }
 
+/*
 func BenchmarkBuyUnsafeSequence(b *testing.B) {
 	b.StopTimer()
 
@@ -194,7 +195,7 @@ func BenchmarkBuyUnsafenParallel(b *testing.B) {
 	})
 }
 
-/**/
+*/
 func BenchmarkBuySequence(b *testing.B) {
 	b.StopTimer()
 

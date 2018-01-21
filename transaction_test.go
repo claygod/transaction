@@ -41,6 +41,29 @@ func TestTransactionExe(t *testing.T) {
 
 }
 
+func TestTransactionCatch(t *testing.T) {
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1)
+	tr.AddUnit(2)
+	tr.Begin().Debit(1, "USD", 5).End()
+	tr.Begin().Debit(2, "USD", 5).End()
+
+	//reqs := []*Request{
+	//	&Request{id: 1, key: "USD", amount: -1, account: tr.},
+	//	&Request{id: 2, key: "USD", amount: -1},
+	//}
+
+	//tn := tr.Begin()
+	//tn.reqs = reqs
+
+	//tn := tr.Begin().Debit(123, "USD", 5)
+	////
+	//if tn.catch() != Ok {
+	//	t.Error("Error catch a transaction")
+	//}
+}
+
 func TestTransactionRollback(t *testing.T) {
 	tr := New()
 	tr.Start()

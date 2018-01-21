@@ -77,7 +77,7 @@ func TestTransactorStop(t *testing.T) {
 }
 
 /*
- */
+
 func TestTransactorUnsafe(t *testing.T) {
 	tr := New()
 	tr.Start()
@@ -96,24 +96,24 @@ func TestTransactorUnsafe(t *testing.T) {
 		t.Error("Invalid transaction result")
 	}
 }
-
+*/
 func TestTransactorAddUnit(t *testing.T) {
 	tr := New()
 	tr.Start()
 	tr.AddUnit(123)
 
-	reqs := []*Request{
-		&Request{id: 123, key: "USD", amount: 10},
-	}
+	//reqs := []*Request{
+	//	&Request{id: 123, key: "USD", amount: 10},
+	//}
 	//Unsafe(&tr, reqs)
 
-	if tr.Unsafe(reqs) != Ok {
-		t.Error("Transaction error in Unsafe mode")
-	}
+	//if tr.Unsafe(reqs) != Ok {
+	//	t.Error("Transaction error in Unsafe mode")
+	//}
 
-	if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
-		t.Error("Invalid transaction result")
-	}
+	//if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
+	//	t.Error("Invalid transaction result")
+	//}
 
 	if tr.AddUnit(123) == Ok {
 		t.Error("You can not re-add a unit")
