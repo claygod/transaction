@@ -52,13 +52,18 @@ func TestTransactorStart(t *testing.T) {
 	if !tr.Start() {
 		t.Error("Now the start is possible!")
 	}
-	//tr.Stop()
+	tr.Stop()
+	trialLimit = trialStop
+	//tr.hasp = stateClosed
+	if tr.Start() {
+		t.Error("Now the start is possible!")
+	}
 	//t.Error(tr.Stop())
 	//t.Error(tr.hasp)
 	//t.Error(tr.counter)
 	//t.Error(stateClosed)
 
-	//trialLimit = trialLimitConst
+	trialLimit = trialLimitConst
 }
 
 func TestTransactorStop(t *testing.T) {
@@ -71,6 +76,12 @@ func TestTransactorStop(t *testing.T) {
 
 	if !tr.Stop() {
 		t.Error("Now the stop is possible!")
+	}
+	tr.Start()
+	trialLimit = trialStop
+	//tr.hasp = stateClosed
+	if tr.Stop() {
+		t.Error("Due to the limitation of the number of iterations, stopping is impossible")
 	}
 
 	trialLimit = trialLimitConst
@@ -132,9 +143,24 @@ func TestTransactorDelUnit(t *testing.T) {
 	if _, err := tr.DelUnit(123); err != Ok {
 		t.Error("The unit has not been deleted")
 	}
+
+	tr.AddUnit(456)
+	tr.Begin().Debit(456, "USD", 5).End()
+
+	tr.storage.getUnit(456).getAccount("USD").counter = 1
+	//tr.storage.
+	//	data[tr.storage.id(456)].
+	//	data[456].
+	//	accounts["USD"].counter = 1
+
+	trialLimit = trialStop + 100
+	if _, err := tr.DelUnit(456); err == Ok {
+		t.Error("The unit has not been deleted")
+	}
+	trialLimit = trialLimitConst
 }
 
-func TestTransactorTotallUnit(t *testing.T) {
+func TestTransactorTotalUnit(t *testing.T) {
 	tr := New()
 	tr.Start()
 	tr.AddUnit(123)
@@ -153,7 +179,31 @@ func TestTransactorTotallUnit(t *testing.T) {
 	if _, err := tr.TotalUnit(456); err == Ok {
 		t.Error("A unit does not exist, there must be an error")
 	}
+}
 
+func TestTransactorTotalAccount(t *testing.T) {
+	tr := New()
+	tr.Start()
+	tr.AddUnit(123)
+	tr.Begin().Debit(123, "USD", 1).End()
+
+	balance, err := tr.TotalAccount(123, "USD")
+
+	if err != Ok {
+		t.Error("Failed to get information on the account")
+	}
+
+	if balance != 1 {
+		t.Error("The received information on the account is erroneous")
+	}
+
+	if _, err := tr.TotalAccount(456, "USD"); err == Ok {
+		t.Error("A account does not exist, there must be an error")
+	}
+
+	if balance, err := tr.TotalAccount(123, "EUR"); err != Ok || balance != 0 {
+		t.Error("A account does not exist, there must be an error")
+	}
 }
 
 func TestTransactorSave(t *testing.T) {
@@ -196,6 +246,7 @@ func TestTransactorSave(t *testing.T) {
 
 func TestTransactorLoad(t *testing.T) {
 	path := "./test.tdb"
+	pathFake := "./testFake.tdb"
 	tr := New()
 	tr.Start()
 	tr.AddUnit(123)
@@ -205,7 +256,13 @@ func TestTransactorLoad(t *testing.T) {
 	tr.Save(path)
 	tr.Stop()
 	tr2 := New()
-	tr2.Load(path)
+	if tr2.Load(pathFake) == Ok {
+		t.Error(fmt.Sprintf("The file `%s` does not exist", pathFake))
+	}
+	if tr2.Load(path) != Ok {
+		t.Error(fmt.Sprintf("The file `%s` does exist", pathFake))
+	}
+	//tr2.Load(path)
 	tr2.Start()
 	if res := tr2.Load(path); res != Ok {
 		t.Error(fmt.Sprintf("Error loading the database file (%d)", res))
@@ -217,5 +274,5 @@ func TestTransactorLoad(t *testing.T) {
 	if res != Ok {
 		t.Error(fmt.Sprintf("Error in the downloaded account (%d)", res))
 	}
-	// os.Remove(path)
+	os.Remove(path)
 }

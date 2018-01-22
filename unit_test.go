@@ -93,4 +93,11 @@ func TestUnitStart(t *testing.T) {
 	if lst := u.start(); len(lst) != 0 {
 		t.Error("I could start all accounts (but it's impossible)")
 	}
+
+	//u.getAccount("USD").counter = 1
+	//trialLimit = trialStop + 100
+	//if lst := u.start(); len(lst) != 1 {
+	//	t.Error(len(lst))
+	//}
+	//trialLimit = trialLimitConst
 }
