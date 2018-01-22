@@ -7,7 +7,7 @@ package transactor
 import (
 	//"errors"
 	//"log"
-	"fmt"
+	//"fmt"
 	"runtime"
 	//"sync"
 	"sync/atomic"
@@ -33,7 +33,7 @@ func (a *Account) addition(amount int64) int64 {
 	}
 
 	for i := trialLimit; i > trialStop; i-- {
-		fmt.Print(i)
+		// fmt.Print(i)
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount
 		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
