@@ -3,23 +3,43 @@
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
 
+The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
+Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $ 92,233,720,368,547,758.07
+
 Библиотека оперирует только целыми числами. Если вы хотите работать, к примеру, с сотыми долями (центы в долларах), умножайте всё на 100. Например, полтора доллара, это будет 150.
 Ограничение на максимальный размер счёта: 2 в 63 степени (9,223,372,036,854,775,807). Для примера: на счёте может лежать сумма не больше $92,233,720,368,547,758.07
+
+The library works in parallel mode and can process millions of requests per second.
+Parallel requests to the same account should not lead to an erroneous change in the balance of this account.
+Debit and credit with the account can be done ONLY as part of the transaction.
 
 Библиотека работает в параллельном режиме и может обрабатывать миллионы запросов в секунду.
 Библиотека следит за тем, чтобы параллельные запросы к одному и тому же счёту не привели к ошибочному изменению баланса этого счёта.
 Дебетовые и кредитные операции со счётом можно проводить ТОЛЬКО в составе транзакции.
 
+The library has two main entities: a unit and an account.
+
 В библиотеке две основных сущности: юнит и аккаунт.
 
 ### Unit
 
+- A unit can be a customer, a company, etc.
+- A unit can have many accounts (accounts are called a string variable)
+- A unit can not be deleted if at least one of its accounts is not zero
+- If a unit receives a certain amount for a nonexistent account, such an account will be created
+
 - Юнитом может быть клиент, фирма и т.д.
-- У юнита может быть много счетов.
-- Юнит не может быть удалён, если хотя бы один из его счетов не нулевой.
-- Если юниту поступает некоторая сумма на несуществующий аккаунт, такой аккаунт будет создан.
+- У юнита может быть много счетов (счета именуются строковай переменной)
+- Юнит не может быть удалён, если хотя бы один из его счетов не нулевой
+- Если юниту поступает некоторая сумма на несуществующий аккаунт, такой аккаунт будет создан
 
 ### Account
+
+- The account serves to account for money, shares, etc.
+- The account necessarily belongs to any unit.
+- The account belongs to only one unit.
+- There is only one balance on one account.
+- Balance is calculated only in whole numbers.
 
 - Аккаунт служит для учёта денег, акций и т.п.
 - Аккаунт обязательно принадлежит какому-либо юниту.
@@ -31,7 +51,7 @@
 
 ### Создание, загрузка, сохранение
 
-### Создание/удаление счёта
+### Create / delete account
 
 ### Credit/debit of an account
 
@@ -47,6 +67,8 @@ t.Begin().Debit(id, "USD", 1).End()
 
 ### Transfer
 
+Example of transfer of one dollar from one account to another.
+
 Пример перевода одного доллара с одного счёта на другой.
 
 ```go
@@ -56,9 +78,12 @@ t.Begin().
 	End()
 ```
 
-### Покупка
+### Purchase / Sale
+
+A purchase is essentially two simultaneous funds transfers
 
 Покупка, это по сути, два одновременных перевода.
+
 ```go
 // Example of buying two shares of "Apple" for $10
 tr.Begin().
