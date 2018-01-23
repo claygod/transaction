@@ -2,7 +2,6 @@
 
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
-[![Coverage Status](https://coveralls.io/repos/github/claygod/transaction/badge.svg?branch=master)](https://coveralls.io/github/claygod/transaction?branch=master)
 [![Build Status](https://travis-ci.org/claygod/transaction.svg?branch=master)](https://travis-ci.org/claygod/transaction)
 
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
