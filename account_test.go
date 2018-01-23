@@ -12,12 +12,19 @@ import (
 func TestAccountAdd(t *testing.T) {
 	a := newAccount(100)
 	if a.addition(50) != 150 {
-		t.Error("Error adding")
+		t.Error("Error addition (The sum does not match)")
 	}
 
 	if a.addition(-200) != -50 {
+		t.Error("Error adding (Negative balance)")
+	}
+
+	trialLimit = trialStop
+	if a.addition(-200) != permitError {
 		t.Error("Error adding")
 	}
+
+	trialLimit = trialLimitConst
 }
 
 func TestAccountCredit(t *testing.T) {

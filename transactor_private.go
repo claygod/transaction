@@ -30,7 +30,7 @@ func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	return u.getAccount(key), Ok
 }
 */
-func (t *Transactor) getAccount2(id int64, key string) (*Account, errorCodes) {
+func (t *Transactor) getAccount(id int64, key string) (*Account, errorCodes) {
 	u := t.storage.getUnit(id)
 	if u == nil {
 		return nil, ErrCodeUnitNotExist

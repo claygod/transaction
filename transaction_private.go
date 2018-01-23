@@ -68,7 +68,7 @@ func (t *Transaction) rollback(num int) {
 
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
-		a, err := t.tr.getAccount2(r.id, r.key)
+		a, err := t.tr.getAccount(r.id, r.key)
 		if err != Ok {
 			// NOTE: log in method getAccount
 			return err

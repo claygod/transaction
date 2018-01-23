@@ -87,6 +87,20 @@ func TestTransactorStop(t *testing.T) {
 	trialLimit = trialLimitConst
 }
 
+func TestTransactorGetAccount(t *testing.T) {
+	tr := New()
+
+	if _, err := tr.getAccount(123, "USD"); err == Ok {
+		t.Error("We must get an error!")
+	}
+
+	tr.AddUnit(123)
+
+	if _, err := tr.getAccount(123, "USD"); err != Ok {
+		t.Error("We should not get an error!")
+	}
+}
+
 /*
 
 func TestTransactorUnsafe(t *testing.T) {
@@ -111,7 +125,7 @@ func TestTransactorUnsafe(t *testing.T) {
 func TestTransactorAddUnit(t *testing.T) {
 	tr := New()
 	tr.Start()
-	tr.AddUnit(123)
+	//tr.AddUnit(123)
 
 	//reqs := []*Request{
 	//	&Request{id: 123, key: "USD", amount: 10},
@@ -125,9 +139,18 @@ func TestTransactorAddUnit(t *testing.T) {
 	//if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
 	//	t.Error("Invalid transaction result")
 	//}
+	if tr.AddUnit(123) != Ok {
+		t.Error("Unable to add unit")
+	}
 
 	if tr.AddUnit(123) == Ok {
 		t.Error("You can not re-add a unit")
+	}
+
+	tr.hasp = stateClosed
+
+	if tr.AddUnit(456) == Ok {
+		t.Error("Due to the blocking, it was not possible to add a new unit.")
 	}
 }
 
@@ -156,6 +179,12 @@ func TestTransactorDelUnit(t *testing.T) {
 	trialLimit = trialStop + 100
 	if _, err := tr.DelUnit(456); err == Ok {
 		t.Error("The unit has not been deleted")
+	}
+
+	tr.hasp = stateClosed
+
+	if _, err := tr.DelUnit(456); err == Ok {
+		t.Error("Due to the blocking, it was not possible to del a unit.")
 	}
 	trialLimit = trialLimitConst
 }

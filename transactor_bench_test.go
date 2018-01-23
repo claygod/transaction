@@ -321,7 +321,7 @@ func BenchmarkTrGetAccount2Sequence(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		//tn.reqs[0].account
-		tr.getAccount2(int64(uint16(u)), "USD")
+		tr.getAccount(int64(uint16(u)), "USD")
 		u += 2
 	}
 }
@@ -342,7 +342,7 @@ func BenchmarkTrGetAccount2Parallel(b *testing.B) {
 
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			tr.getAccount2(int64(uint16(u)), "USD")
+			tr.getAccount(int64(uint16(u)), "USD")
 			u += 2
 		}
 	})

@@ -39,6 +39,17 @@ func TestTransactionExe(t *testing.T) {
 		t.Error("Error executing a transaction")
 	}
 
+	tr.storage.getUnit(123).accounts["USD"].counter = -1
+
+	if tr.Begin().Debit(123, "USD", 5).End() == Ok {
+		t.Error("The transaction could not cath the account")
+	}
+
+	tr.storage.delUnit(123)
+	if tr.Begin().Debit(123, "USD", 5).End() == Ok {
+		t.Error("The requested unit does not exist")
+	}
+
 }
 
 func TestTransactionCatch(t *testing.T) {
@@ -49,19 +60,19 @@ func TestTransactionCatch(t *testing.T) {
 	tr.Begin().Debit(1, "USD", 5).End()
 	tr.Begin().Debit(2, "USD", 5).End()
 
-	//reqs := []*Request{
-	//	&Request{id: 1, key: "USD", amount: -1, account: tr.},
-	//	&Request{id: 2, key: "USD", amount: -1},
-	//}
+	tn := tr.Begin().Credit(1, "USD", 1)
+	tn.reqs[0].account = tr.storage.getUnit(1).accounts["USD"]
+	if tn.catch() != Ok {
+		t.Error("TestTransactionCatch")
+	}
+	tr.storage.getUnit(1).accounts["USD"].counter = -1
 
-	//tn := tr.Begin()
-	//tn.reqs = reqs
+	tn2 := tr.Begin().Credit(1, "USD", 2)
+	tn2.reqs[0].account = tr.storage.getUnit(1).accounts["USD"]
 
-	//tn := tr.Begin().Debit(123, "USD", 5)
-	////
-	//if tn.catch() != Ok {
-	//	t.Error("Error catch a transaction")
-	//}
+	if tn2.catch() == Ok {
+		t.Error("TestTransactionCatch 222")
+	}
 }
 
 func TestTransactionRollback(t *testing.T) {

@@ -25,12 +25,14 @@ func newAccount(amount int64) *Account {
 }
 
 func (a *Account) addition(amount int64) int64 {
-	b := atomic.LoadInt64(&a.balance)
-	nb := b + amount
 
-	if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
-		return nb
-	}
+	// Закомментированный кусок кода позволяет немного ускорить
+	// выполнение путём недопущения запуска цикла (экономия на спичках)
+	//b := atomic.LoadInt64(&a.balance)
+	//nb := b + amount
+	//if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
+	//	return nb
+	//}
 
 	for i := trialLimit; i > trialStop; i-- {
 		// fmt.Print(i)
