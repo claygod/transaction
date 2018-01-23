@@ -6,7 +6,7 @@ package transactor
 
 import (
 	"bytes"
-	"fmt"
+	// "fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -297,22 +297,22 @@ func TestTransactorLoad(t *testing.T) {
 	tr.Stop()
 	tr2 := New()
 	if tr2.Load(pathFake) == Ok {
-		t.Error(fmt.Sprintf("The file `%s` does not exist", pathFake))
+		t.Errorf("The file `%s` does not exist", pathFake)
 	}
 	if tr2.Load(path) != Ok {
-		t.Error(fmt.Sprintf("The file `%s` does exist", pathFake))
+		t.Errorf("The file `%s` does exist", pathFake)
 	}
 	//tr2.Load(path)
 	tr2.Start()
 	if res := tr2.Load(path); res != Ok {
-		t.Error(fmt.Sprintf("Error loading the database file (%d)", res))
+		t.Errorf("Error loading the database file (%d)", res)
 	}
 	balance, res := tr2.TotalAccount(123, "USD")
 	if balance != 7 {
-		t.Error(fmt.Sprintf("Error in account balance (%d)", balance))
+		t.Errorf("Error in account balance (%d)", balance)
 	}
 	if res != Ok {
-		t.Error(fmt.Sprintf("Error in the downloaded account (%d)", res))
+		t.Errorf("Error in the downloaded account (%d)", res)
 	}
 	os.Remove(path)
 }
