@@ -3,6 +3,7 @@
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
 [![Build Status](https://travis-ci.org/claygod/transaction.svg?branch=master)](https://travis-ci.org/claygod/transaction)
+[![Code Coverage](https://codecov.io/gh/claygod/transaction/branch/develop/graph/badge.svg)](https://codecov.io/gh/oakmound/oak)
 
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
 Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $ 92,233,720,368,547,758.07
