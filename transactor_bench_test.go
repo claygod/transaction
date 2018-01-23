@@ -360,11 +360,9 @@ func BenchmarkUnitGetAccountSequence(b *testing.B) {
 	}
 
 	b.StartTimer()
-	u := 0
 	for i := 0; i < b.N; i++ {
 		//tn.reqs[0].account
 		un.getAccount("USD")
-		u += 2
 	}
 }
 
