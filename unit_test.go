@@ -47,12 +47,13 @@ func TestUnitDelAllAccount(t *testing.T) {
 	if lst, err := u.delAllAccounts(); len(lst) != 0 || err != Ok {
 		t.Error("Error deleting all accounts (and they are not)")
 	}
-	trialLimit = 200
+	trialLimit = trialStop + 100
 	u.getAccount("USD").counter = 1
 	if lst, err := u.delAllAccounts(); len(lst) != 1 || err != ErrCodeAccountNotStop {
 		t.Error("When cleaning a unit, it removes a non-empty account")
 	}
-	trialLimit = trialLimit
+	trialLimit = trialLimitConst
+
 	u.getAccount("USD").counter = 0
 	u.getAccount("USD").addition(5)
 	if lst, err := u.delAllAccounts(); len(lst) != 1 || err != ErrCodeUnitNotEmpty {
@@ -78,12 +79,12 @@ func TestUnitStop(t *testing.T) {
 	if lst := u.stop(); len(lst) != 0 {
 		t.Error("I could stop all accounts (but it's impossible)")
 	}
-	trialLimit = 200
+	trialLimit = trialStop + 100
 	u.getAccount("USD").counter = 1
 	if lst := u.stop(); len(lst) == 0 {
 		t.Error("I could not stop all accounts (but it's possible)")
 	}
-	trialLimit = trialLimit
+	trialLimit = trialLimitConst
 }
 
 func TestUnitStart(t *testing.T) {
