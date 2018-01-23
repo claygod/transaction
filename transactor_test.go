@@ -241,7 +241,18 @@ func TestTransactorSave(t *testing.T) {
 	tr.Start()
 	tr.AddUnit(123)
 	tr.Begin().Debit(123, "USD", 7).End()
-	tr.Save(path)
+
+	trialLimit = trialStop
+	tr.hasp = stateClosed
+	if tr.Save(path) == Ok {
+		t.Error("The lock should prevent the file from being saved")
+	}
+	trialLimit = trialLimitConst
+
+	tr.hasp = stateOpen
+	if tr.Save(path) != Ok {
+		t.Error("There is no lock, saving should be successful")
+	}
 
 	endLine := []byte(endLineSymbol)
 	separator := []byte(separatorSymbol)
