@@ -2,6 +2,7 @@
 
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
+[![Coverage Status](https://coveralls.io/repos/github/claygod/transaction/badge.svg?branch=master)](https://coveralls.io/github/claygod/transaction?branch=master)
 
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
 Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $ 92,233,720,368,547,758.07
