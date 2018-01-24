@@ -56,15 +56,18 @@ func (c *Core) AddUnit(id int64) errorCodes {
 	return Ok
 }
 
-// DelUnit - deletion of a unit
-// The unit will be deleted only when all its accounts are stopped and deleted.
-// In case of an error, a list of not deleted accounts is returned.
-// Returned codes:
-// - ErrCodeCoreCatch - not obtained permission
-// - ErrCodeUnitExist - there is no such unit
-// - ErrCodeAccountNotStop - accounts failed to stop
-// - ErrCodeUnitNotEmpty - accounts are not zero
-// - Ok
+/*
+DelUnit - deletion of a unit.
+The unit will be deleted only when all its accounts are stopped and deleted.
+In case of an error, a list of not deleted accounts is returned.
+
+Returned codes:
+	ErrCodeCoreCatch		// not obtained permission
+	ErrCodeUnitExist 		// there is no such unit
+	ErrCodeAccountNotStop	// accounts failed to stop
+	ErrCodeUnitNotEmpty		// accounts are not zero
+	Ok
+*/
 func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 	if !c.catch() {
 		go c.lgr.New().Context("Msg", errMsgCoreNotCatch).Context("Unit", id).Context("Method", "DelUnit").Write()
@@ -85,12 +88,15 @@ func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 	return nil, Ok
 }
 
-// TotalUnit - statement on all accounts of the unit
-// The ID-balance array is returned.
-// Returned codes:
-// - ErrCodeCoreCatch - not obtained permission
-// - ErrCodeUnitExist - there is no such unit
-// - Ok
+/*
+TotalUnit - statement on all accounts of the unit.
+The ID-balance array is returned.
+
+Returned codes:
+	ErrCodeCoreCatch // not obtained permission
+	ErrCodeUnitExist // there is no such unit
+	Ok
+*/
 func (c *Core) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	if !c.catch() {
 		go c.lgr.New().Context("Msg", errMsgCoreNotCatch).Context("Unit", id).Context("Method", "TotalUnit").Write()
@@ -107,13 +113,16 @@ func (c *Core) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	return un.total(), Ok
 }
 
-// TotalAccount - account balance
-// If an account has not been created before,
-// it will be created with a zero balance.
-// Returned codes:
-// - ErrCodeCoreCatch - not obtained permission
-// - ErrCodeUnitExist - there is no such unit
-// - Ok
+/*
+TotalAccount - account balance
+If an account has not been created before,
+it will be created with a zero balance.
+
+Returned codes:
+	ErrCodeCoreCatch // not obtained permission
+	ErrCodeUnitExist // there is no such unit
+	Ok
+*/
 func (c *Core) TotalAccount(id int64, key string) (int64, errorCodes) {
 	if !c.catch() {
 		go c.lgr.New().Context("Msg", errMsgCoreNotCatch).Context("Unit", id).Context("Account", key).Context("Method", "TotalAccount").Write()
