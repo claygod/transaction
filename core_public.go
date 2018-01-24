@@ -33,12 +33,16 @@ func New() Core {
 	}
 }
 
-// AddUnit - adding a new unit
-// Two units with the same identifier can not exist.
-// Returned codes:
-// - ErrCodeCoreCatch - not obtained permission
-// - ErrCodeUnitExist - such a unit already exists
-// - Ok
+/*
+AddUnit - adding a new unit.
+Two units with the same identifier can not exist.
+
+Returned codes:
+
+	ErrCodeCoreCatch - not obtained permission
+	ErrCodeUnitExist - such a unit already exists
+	Ok
+*/
 func (c *Core) AddUnit(id int64) errorCodes {
 	if !c.catch() {
 		go c.lgr.New().Context("Msg", errMsgCoreNotCatch).Context("Unit", id).Context("Method", "AddUnit").Write()
@@ -126,6 +130,7 @@ func (c *Core) TotalAccount(id int64, key string) (int64, errorCodes) {
 	return un.getAccount(key).total(), Ok
 }
 
+// Start -
 func (c *Core) Start() bool {
 	for i := trialLimit; i > trialStop; i-- {
 		if atomic.LoadInt64(&c.hasp) == stateOpen || atomic.CompareAndSwapInt64(&c.hasp, stateClosed, stateOpen) {
