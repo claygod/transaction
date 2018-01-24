@@ -62,10 +62,10 @@ The unit will be deleted only when all its accounts are stopped and deleted.
 In case of an error, a list of not deleted accounts is returned.
 
 Returned codes:
-	ErrCodeCoreCatch		// not obtained permission
-	ErrCodeUnitExist 		// there is no such unit
-	ErrCodeAccountNotStop	// accounts failed to stop
-	ErrCodeUnitNotEmpty		// accounts are not zero
+	ErrCodeCoreCatch // not obtained permission
+	ErrCodeUnitExist // there is no such unit
+	ErrCodeAccountNotStop // accounts failed to stop
+	ErrCodeUnitNotEmpty // accounts are not zero
 	Ok
 */
 func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
@@ -138,7 +138,12 @@ func (c *Core) TotalAccount(id int64, key string) (int64, errorCodes) {
 	return un.getAccount(key).total(), Ok
 }
 
-// Start -
+/*
+Start - start the application.
+Only after the start you can perform transactions.
+If the launch was successful, or the application is already running,
+the `true` is returned, otherwise it returns `false`.
+*/
 func (c *Core) Start() bool {
 	for i := trialLimit; i > trialStop; i-- {
 		if atomic.LoadInt64(&c.hasp) == stateOpen || atomic.CompareAndSwapInt64(&c.hasp, stateClosed, stateOpen) {
@@ -150,6 +155,11 @@ func (c *Core) Start() bool {
 	return false
 }
 
+/*
+Stop - stop the application.
+The new transactions will not start. Old transactions are executed,
+and after the end of all running transactions, the answer is returned.
+*/
 func (c *Core) Stop() bool {
 	for i := trialLimit; i > trialStop; i-- {
 		if atomic.LoadInt64(&c.hasp) == stateClosed || (atomic.LoadInt64(&c.counter) == 0 && atomic.CompareAndSwapInt64(&c.hasp, stateOpen, stateClosed)) {
@@ -161,13 +171,23 @@ func (c *Core) Stop() bool {
 	return false
 }
 
+/*
+Load - loading data from a file.
+The application stops for the duration of this operation.
+
+Returned codes:
+	ErrCodeCoreStop //
+	ErrCodeLoadReadFile //
+	ErrCodeLoadStrToInt64
+	Ok
+*/
 func (c *Core) Load(path string) errorCodes {
-	hasp := atomic.LoadInt64(&c.hasp)
-	if hasp == stateClosed && !c.Stop() {
+	//hasp := atomic.LoadInt64(&c.hasp)
+	if !c.Stop() { //  hasp == stateClosed ||
 		go c.lgr.New().Context("Msg", errMsgCoreNotStop).Context("Method", "Load").Write()
 		return ErrCodeCoreStop
 	}
-
+	defer c.Start()
 	bs, err := ioutil.ReadFile(path)
 	if err != nil {
 		go c.lgr.New().Context("Msg", errMsgCoreNotReadFile).Context("Path", path).Context("Method", "Load").Write()
@@ -198,10 +218,10 @@ func (c *Core) Load(path string) errorCodes {
 
 		un.accounts[string(a[2])] = newAccount(balance)
 	}
-	if hasp == stateClosed && !c.Start() {
-		go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Load").Write()
-		return ErrCodeCoreStart
-	}
+	//if !c.Start() { // hasp == stateClosed &&
+	//	go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Load").Write()
+	//	return ErrCodeCoreStart
+	//}
 	return Ok
 }
 
