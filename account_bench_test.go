@@ -1,8 +1,8 @@
 package transactor
 
-// Transactor
+// Core
 // Account bench
-// Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
 	// "sync/atomic"

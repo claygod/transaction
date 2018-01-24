@@ -1,8 +1,8 @@
 package transactor
 
-// Transactor
+// Core
 // Config
-// Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 const trialLimitConst int = 2000000000 //29999999
 const trialStop int = 64
@@ -39,9 +39,9 @@ const (
 	ErrCodeTransactionCatch
 	ErrCodeTransactionCredit
 	ErrCodeTransactionDebit
-	ErrCodeTransactorCatch
-	ErrCodeTransactorStart
-	ErrCodeTransactorStop
+	ErrCodeCoreCatch
+	ErrCodeCoreStart
+	ErrCodeCoreStop
 	ErrCodeSaveCreateFile
 	ErrCodeLoadReadFile
 	ErrCodeLoadStrToInt64
@@ -57,14 +57,14 @@ const (
 	// errMsgAccountNotStop      string = `Account does not stop`
 	errMsgAccountNotCatch         string = `Not caught account`
 	errMsgAccountCredit           string = `Credit transaction error`
-	errMsgTransactorNotCatch      string = `Not caught transactor`
+	errMsgCoreNotCatch      string = `Not caught transactor`
 	errMsgTransactionNotFill      string = `Not fill transaction`
 	errMsgTransactionNotCatch     string = `Not caught transaction`
-	errMsgTransactorNotStart      string = `Transactor does not start`
-	errMsgTransactorNotStop       string = `Transactor does not stop`
-	errMsgTransactorNotLoad       string = `Transactor does not load`
-	errMsgTransactorNotSave       string = `Transactor does not save`
-	errMsgTransactorNotReadFile   string = `Transactor does not read file`
-	errMsgTransactorNotCreateFile string = `Transactor does not create file`
-	errMsgTransactorParseString   string = `Could not parse line`
+	errMsgCoreNotStart      string = `Core does not start`
+	errMsgCoreNotStop       string = `Core does not stop`
+	errMsgCoreNotLoad       string = `Core does not load`
+	errMsgCoreNotSave       string = `Core does not save`
+	errMsgCoreNotReadFile   string = `Core does not read file`
+	errMsgCoreNotCreateFile string = `Core does not create file`
+	errMsgCoreParseString   string = `Could not parse line`
 )

@@ -1,15 +1,15 @@
 package transactor
 
-// Transactor
+// Core
 // Transaction
-// Copyright © 2016 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+// Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 //"errors"
 //"log"
 //"fmt"
 
 type Transaction struct {
-	tr *Transactor
+	core *Core
 	//down []*Request
 	up   []*Request
 	reqs []*Request
@@ -25,6 +25,7 @@ func (t *Transaction) Op(customer int64, account string, count int64) *Transacti
 	return t
 }
 */
+
 func (t *Transaction) Debit(customer int64, account string, count int64) *Transaction {
 	t.up = append(t.up, &Request{id: customer, key: account, amount: count})
 	//t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: count})
@@ -44,7 +45,7 @@ func (t *Transaction) End() errorCodes {
 }
 
 /*
-func Unsafe(tn *Transactor, reqs []*Request) errorCodes {
+func Unsafe(tn *Core, reqs []*Request) errorCodes {
 	t := &Transaction{
 		tr:   tn,
 		up:   make([]*Request, 0, 0),
