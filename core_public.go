@@ -39,8 +39,8 @@ Two units with the same identifier can not exist.
 
 Returned codes:
 
-	ErrCodeCoreCatch - not obtained permission
-	ErrCodeUnitExist - such a unit already exists
+	ErrCodeCoreCatch // not obtained permission
+	ErrCodeUnitExist // such a unit already exists
 	Ok
 */
 func (c *Core) AddUnit(id int64) errorCodes {
