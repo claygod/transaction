@@ -74,13 +74,13 @@ func TestCoreStop(t *testing.T) {
 		t.Error("Now the start is possible!")
 	}
 
-	if !tr.Stop() {
+	if ok, _ := tr.Stop(); !ok {
 		t.Error("Now the stop is possible!")
 	}
 	tr.Start()
 	trialLimit = trialStop
 	//tr.hasp = stateClosed
-	if tr.Stop() {
+	if ok, _ := tr.Stop(); ok {
 		t.Error("Due to the limitation of the number of iterations, stopping is impossible")
 	}
 
@@ -296,15 +296,15 @@ func TestCoreLoad(t *testing.T) {
 	tr.Save(path)
 	tr.Stop()
 	tr2 := New()
-	if tr2.Load(pathFake) == Ok {
+	if res, _ := tr2.Load(pathFake); res == Ok {
 		t.Errorf("The file `%s` does not exist", pathFake)
 	}
-	if tr2.Load(path) != Ok {
+	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("The file `%s` does exist", pathFake)
 	}
 	//tr2.Load(path)
 	tr2.Start()
-	if res := tr2.Load(path); res != Ok {
+	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("Error loading the database file (%d)", res)
 	}
 	balance, res := tr2.TotalAccount(123, "USD")

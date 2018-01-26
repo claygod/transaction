@@ -17,7 +17,7 @@ var trialLimit int = trialLimitConst
 
 // Hasp state
 const (
-	stateClosed = iota
+	stateClosed int64 = iota
 	stateOpen
 )
 
@@ -55,16 +55,16 @@ const (
 	// errMsgAccountNotExist     string = `This account already not exists`
 	// errMsgAccountNotEmpty     string = `Account is not empty`
 	// errMsgAccountNotStop      string = `Account does not stop`
-	errMsgAccountNotCatch         string = `Not caught account`
-	errMsgAccountCredit           string = `Credit transaction error`
-	errMsgCoreNotCatch      string = `Not caught transactor`
-	errMsgTransactionNotFill      string = `Not fill transaction`
-	errMsgTransactionNotCatch     string = `Not caught transaction`
-	errMsgCoreNotStart      string = `Core does not start`
-	errMsgCoreNotStop       string = `Core does not stop`
-	errMsgCoreNotLoad       string = `Core does not load`
-	errMsgCoreNotSave       string = `Core does not save`
-	errMsgCoreNotReadFile   string = `Core does not read file`
-	errMsgCoreNotCreateFile string = `Core does not create file`
-	errMsgCoreParseString   string = `Could not parse line`
+	errMsgAccountNotCatch     string = `Not caught account`
+	errMsgAccountCredit       string = `Credit transaction error`
+	errMsgCoreNotCatch        string = `Not caught transactor`
+	errMsgTransactionNotFill  string = `Not fill transaction`
+	errMsgTransactionNotCatch string = `Not caught transaction`
+	errMsgCoreNotStart        string = `Core does not start`
+	errMsgCoreNotStop         string = `Core does not stop`
+	errMsgCoreNotLoad         string = `Core does not load`
+	errMsgCoreNotSave         string = `Core does not save`
+	errMsgCoreNotReadFile     string = `Core does not read file`
+	errMsgCoreNotCreateFile   string = `Core does not create file`
+	errMsgCoreParseString     string = `Could not parse line`
 )

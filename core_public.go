@@ -160,15 +160,18 @@ Stop - stop the application.
 The new transactions will not start. Old transactions are executed,
 and after the end of all running transactions, the answer is returned.
 */
-func (c *Core) Stop() bool {
+func (c *Core) Stop() (bool, int64) {
 	for i := trialLimit; i > trialStop; i-- {
-		if atomic.LoadInt64(&c.hasp) == stateClosed || (atomic.LoadInt64(&c.counter) == 0 && atomic.CompareAndSwapInt64(&c.hasp, stateOpen, stateClosed)) {
-			return true
+		if atomic.LoadInt64(&c.hasp) == stateClosed {
+			return true, stateClosed
+		} else if atomic.LoadInt64(&c.counter) == 0 &&
+			atomic.CompareAndSwapInt64(&c.hasp, stateOpen, stateClosed) {
+			return true, stateOpen
 		}
 		runtime.Gosched()
 	}
 	go c.lgr.New().Context("Msg", errMsgCoreNotStop).Context("Method", "Stop").Write()
-	return false
+	return false, atomic.LoadInt64(&c.hasp)
 }
 
 /*
@@ -176,22 +179,31 @@ Load - loading data from a file.
 The application stops for the duration of this operation.
 
 Returned codes:
-	ErrCodeCoreStop //
-	ErrCodeLoadReadFile //
-	ErrCodeLoadStrToInt64
+	ErrCodeCoreStop // unable to stop app
+	ErrCodeLoadReadFile // failed to download the file
+	ErrCodeLoadStrToInt64 // parsing error
 	Ok
 */
-func (c *Core) Load(path string) errorCodes {
-	//hasp := atomic.LoadInt64(&c.hasp)
-	if !c.Stop() { //  hasp == stateClosed ||
+func (c *Core) Load(path string) (errorCodes, map[int64]string) {
+	notLoad := make(map[int64]string)
+	var hasp int64
+	var ok bool
+	// here it is possible to change the status of `hasp` ToDo: to fix
+
+	if ok, hasp = c.Stop(); !ok { //  hasp == stateClosed ||
 		go c.lgr.New().Context("Msg", errMsgCoreNotStop).Context("Method", "Load").Write()
-		return ErrCodeCoreStop
+		return ErrCodeCoreStop, notLoad
 	}
-	defer c.Start()
+	//defer c.Start()
+	defer func() {
+		if hasp == stateOpen {
+			c.Start()
+		}
+	}()
 	bs, err := ioutil.ReadFile(path)
 	if err != nil {
 		go c.lgr.New().Context("Msg", errMsgCoreNotReadFile).Context("Path", path).Context("Method", "Load").Write()
-		return ErrCodeLoadReadFile
+		return ErrCodeLoadReadFile, notLoad
 	}
 	endLine := []byte(endLineSymbol)
 	separator := []byte(separatorSymbol)
@@ -203,34 +215,49 @@ func (c *Core) Load(path string) errorCodes {
 		id, err := strconv.ParseInt(string(a[0]), 10, 64)
 		if err != nil {
 			go c.lgr.New().Context("Msg", errMsgCoreParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
-			return ErrCodeLoadStrToInt64
+			return ErrCodeLoadStrToInt64, notLoad
 		}
 		balance, err := strconv.ParseInt(string(a[1]), 10, 64)
 		if err != nil {
 			go c.lgr.New().Context("Msg", errMsgCoreParseString).Context("Path", path).Context("String", str).Context("Method", "Load").Write()
-			return ErrCodeLoadStrToInt64
+			return ErrCodeLoadStrToInt64, notLoad
 		}
 		un := c.storage.getUnit(id)
 		if un == nil {
 			c.storage.addUnit(id)
 			un = c.storage.getUnit(id)
 		}
+		if _, ok := un.accounts[string(a[2])]; !ok {
+			un.accounts[string(a[2])] = newAccount(balance)
+		} else {
+			// обработка ошибки
+			notLoad[id] = string(a[2])
+		}
 
-		un.accounts[string(a[2])] = newAccount(balance)
 	}
+	//if hasp == stateOpen {
+
+	//}
 	//if !c.Start() { // hasp == stateClosed &&
 	//	go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Load").Write()
 	//	return ErrCodeCoreStart
 	//}
-	return Ok
+	return Ok, notLoad
 }
 
 func (c *Core) Save(path string) errorCodes {
-	hasp := atomic.LoadInt64(&c.hasp)
-	if hasp == stateClosed && !c.Stop() {
+	//hasp := atomic.LoadInt64(&c.hasp)
+	var hasp int64
+	var ok bool
+	if ok, hasp = c.Stop(); !ok {
 		go c.lgr.New().Context("Msg", errMsgCoreNotStop).Context("Method", "Save").Write()
 		return ErrCodeCoreStop
 	}
+	defer func() {
+		if hasp == stateOpen {
+			c.Start()
+		}
+	}()
 
 	var buf bytes.Buffer
 	for i := uint64(0); i < storageNumber; i++ {
@@ -245,10 +272,10 @@ func (c *Core) Save(path string) errorCodes {
 		go c.lgr.New().Context("Msg", errMsgCoreNotCreateFile).Context("Path", path).Context("Method", "Save").Write()
 		return ErrCodeSaveCreateFile
 	}
-	if hasp == stateClosed && !c.Start() {
-		go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Save").Write()
-		return ErrCodeCoreStart
-	}
+	//if hasp == stateClosed && !c.Start() {
+	//	go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Save").Write()
+	//	return ErrCodeCoreStart
+	//}
 	return Ok
 }
 
