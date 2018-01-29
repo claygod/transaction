@@ -5,29 +5,44 @@ package transactor
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	//"errors"
-	//"log"
-	//"fmt"
 	"runtime"
-	//"sync"
 	"sync/atomic"
 )
 
+/*
+Account - keeps a balance.
+Account balance can not be less than zero.
+
+The counter has two tasks:
+	counts the number of operations performed
+	stops the account (new operations are not started)
+*/
 type Account struct {
 	counter int64
 	balance int64
 }
 
-// newAccount - create new account.
+/*
+newAccount - create new account.
+*/
 func newAccount(amount int64) *Account {
 	k := &Account{balance: amount}
 	return k
 }
 
+/*
+addition - add to the balance the input variable.
+If the result of adding the balance and the input
+variable is less than zero, the balance does not change.
+
+Returned result:
+	greater than or equal to zero // OK
+	less than zero // Error
+*/
 func (a *Account) addition(amount int64) int64 {
 
-	// Закомментированный кусок кода позволяет немного ускорить
-	// выполнение путём недопущения запуска цикла (экономия на спичках)
+	// The hidden part of the code allows you
+	// to speed up a bit by avoiding the cycle start
 	//b := atomic.LoadInt64(&a.balance)
 	//nb := b + amount
 	//if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
@@ -35,7 +50,6 @@ func (a *Account) addition(amount int64) int64 {
 	//}
 
 	for i := trialLimit; i > trialStop; i-- {
-		// fmt.Print(i)
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount
 		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
@@ -52,11 +66,16 @@ func (a *Account) addition(amount int64) int64 {
 	return permitError
 }
 
+/*
+total - current account balance.
+*/
 func (a *Account) total() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
 
-// catch - ловим разрешение на проведение операций с аккаунтом
+/*
+catch - get permission to perform operations with the account.
+*/
 func (a *Account) catch() bool {
 	if atomic.LoadInt64(&a.counter) < 0 {
 		return false
@@ -68,10 +87,16 @@ func (a *Account) catch() bool {
 	return false
 }
 
+/*
+throw - current account operation has been completed
+*/
 func (a *Account) throw() {
 	atomic.AddInt64(&a.counter, -1)
 }
 
+/*
+start - start an account.
+*/
 func (a *Account) start() bool {
 	var currentCounter int64
 	for i := trialLimit; i > trialStop; i-- {
@@ -88,6 +113,9 @@ func (a *Account) start() bool {
 	return false
 }
 
+/*
+stop - stop an account.
+*/
 func (a *Account) stop() bool {
 	var currentCounter int64
 
@@ -111,7 +139,3 @@ func (a *Account) stop() bool {
 	}
 	return false
 }
-
-//func (a *Account) stopUnsafe() {
-//	atomic.StoreInt64(&a.counter, permitError)
-//}

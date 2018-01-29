@@ -6,22 +6,30 @@ package transactor
 
 import (
 	"fmt"
-	// "io"
 	"log"
 )
 
+/*
+logger - prints error messages to the console
+*/
 type logger map[string]interface{}
 
-func (l logger) New() logger {
-	return make(logger)
+/*
+log - return new logger
+*/
+func (l logger) log(msg string) logger {
+	return logger{"": msg} //make(logger)
 }
 
-func (l logger) Context(k string, v interface{}) logger {
+/*
+context - add context to the log
+*/
+func (l logger) context(k string, v interface{}) logger {
 	l[k] = v
 	return l
 }
 
-func (l logger) Write() {
+func (l logger) send() {
 	out := ""
 	for k, value := range l {
 		switch v := value.(type) {
@@ -31,6 +39,5 @@ func (l logger) Write() {
 			out += fmt.Sprintf("%s: %s. ", k, v)
 		}
 	}
-	//w.Print(out)
 	log.Print(out)
 }

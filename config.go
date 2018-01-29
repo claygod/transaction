@@ -39,6 +39,7 @@ const (
 	ErrCodeTransactionCatch
 	ErrCodeTransactionCredit
 	ErrCodeTransactionDebit
+	// ErrCodeTransactionLessZero //
 	ErrCodeCoreCatch
 	ErrCodeCoreStart
 	ErrCodeCoreStop
@@ -49,8 +50,9 @@ const (
 
 // Error messages
 const (
-	errMsgUnitExist    string = `This unit already exists`
-	errMsgUnitNotExist string = `This unit already not exists`
+	errMsgUnitExist     string = `This unit already exists`
+	errMsgUnitNotExist  string = `This unit already not exists`
+	errMsgUnitNotDelAll string = `Could not delete all accounts`
 	// errMsgAccountExist        string = `This account already exists`
 	// errMsgAccountNotExist     string = `This account already not exists`
 	// errMsgAccountNotEmpty     string = `Account is not empty`
@@ -60,11 +62,12 @@ const (
 	errMsgCoreNotCatch        string = `Not caught transactor`
 	errMsgTransactionNotFill  string = `Not fill transaction`
 	errMsgTransactionNotCatch string = `Not caught transaction`
-	errMsgCoreNotStart        string = `Core does not start`
-	errMsgCoreNotStop         string = `Core does not stop`
-	errMsgCoreNotLoad         string = `Core does not load`
-	errMsgCoreNotSave         string = `Core does not save`
-	errMsgCoreNotReadFile     string = `Core does not read file`
-	errMsgCoreNotCreateFile   string = `Core does not create file`
-	errMsgCoreParseString     string = `Could not parse line`
+	// ErrMsgTransactionLessZero string = `Not caught transaction` //
+	errMsgCoreNotStart      string = `Core does not start`
+	errMsgCoreNotStop       string = `Core does not stop`
+	errMsgCoreNotLoad       string = `Core does not load`
+	errMsgCoreNotSave       string = `Core does not save`
+	errMsgCoreNotReadFile   string = `Core does not read file`
+	errMsgCoreNotCreateFile string = `Core does not create file`
+	errMsgCoreParseString   string = `Could not parse line`
 )

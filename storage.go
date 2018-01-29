@@ -16,11 +16,16 @@ const storageDegree uint64 = 16
 const storageNumber uint64 = 1 << storageDegree
 const storageShift uint64 = 64 - storageDegree
 
+/*
+ Storage - provides access to Sections with units.
+*/
 type Storage struct {
 	data [storageNumber]*Section
 }
 
-// newStorage - create new Storage
+/*
+newStorage - create new Storage
+*/
 func newStorage() *Storage {
 	s := &Storage{}
 	for i := uint64(0); i < storageNumber; i++ {
@@ -34,11 +39,11 @@ func (s *Storage) addUnit(id int64) bool {
 	return section.addUnit(id)
 }
 
-func (s *Storage) getUnit(id int64) *Unit {
+func (s *Storage) getUnit(id int64) *unit {
 	return s.data[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
 }
 
-func (s *Storage) delUnit(id int64) (*Unit, bool) {
+func (s *Storage) delUnit(id int64) (*unit, bool) {
 	return s.data[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
 }
 
@@ -46,15 +51,18 @@ func (s *Storage) id(id int64) uint64 {
 	return (uint64(id) << storageShift) >> storageShift
 }
 
+/*
+ Section - provides access to units.
+*/
 type Section struct {
 	sync.Mutex
-	data map[int64]*Unit
+	data map[int64]*unit
 }
 
 // newSection - create new Section
 func newSection() *Section {
 	s := &Section{
-		data: make(map[int64]*Unit),
+		data: make(map[int64]*unit),
 	}
 	return s
 }
@@ -81,14 +89,14 @@ func (s *Section) addUnit(id int64) bool {
 	return false
 }
 
-func (s *Section) getUnit(id int64) *Unit {
+func (s *Section) getUnit(id int64) *unit {
 	if u, ok := s.data[id]; ok {
 		return u
 	}
 	return nil
 }
 
-func (s *Section) delUnit(id int64) (*Unit, bool) {
+func (s *Section) delUnit(id int64) (*unit, bool) {
 	s.Lock()
 	defer s.Unlock()
 

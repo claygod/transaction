@@ -4,57 +4,52 @@ package transactor
 // Transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-//"errors"
-//"log"
-//"fmt"
-
+/*
+Transaction - preparation and execution of a transaction
+*/
 type Transaction struct {
 	core *Core
-	//down []*Request
 	up   []*Request
 	reqs []*Request
 }
 
 /*
-func (t *Transaction) Op(customer int64, account string, count int64) *Transaction {
-	if count >= 0 {
-		t.up = append(t.up, &Request{id: customer, key: account, amount: count})
-	} else {
-		t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: -count})
-	}
-	return t
-}
+Debit - add debit to transaction.
+
+Input variables:
+	customer - ID
+	account - account string code
+	count - number (type "uint64" for "less-zero" safety)
 */
-
-func (t *Transaction) Debit(customer int64, account string, count int64) *Transaction {
-	t.up = append(t.up, &Request{id: customer, key: account, amount: count})
-	//t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: count})
+func (t *Transaction) Debit(customer int64, account string, count uint64) *Transaction {
+	t.up = append(t.up, &Request{id: customer, key: account, amount: int64(count)})
 	return t
 }
 
-func (t *Transaction) Credit(customer int64, account string, count int64) *Transaction {
-	//t.down = append(t.down, &Request{id: customer, key: account, amount: count})
-	t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: -count})
+/*
+Credit - add credit to transaction.
+
+Input variables:
+	customer - ID
+	account - account string code
+	count - number (type "uint64" for "less-zero" safety)
+*/
+func (t *Transaction) Credit(customer int64, account string, count uint64) *Transaction {
+	t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: -(int64(count))})
 	return t
 }
 
+/*
+End - complete the data preparation and proceed with the transaction.
+*/
 func (t *Transaction) End() errorCodes {
-	//return t.tn.executeTransaction(t)
 	t.reqs = append(t.reqs, t.up...)
 	return t.exeTransaction()
 }
 
 /*
-func Unsafe(tn *Core, reqs []*Request) errorCodes {
-	t := &Transaction{
-		tr:   tn,
-		up:   make([]*Request, 0, 0),
-		reqs: reqs,
-	}
-	return t.exeTransaction()
-}
+Request - single operation data
 */
-
 type Request struct {
 	id      int64
 	key     string

@@ -10,18 +10,27 @@ import (
 	"sync"
 )
 
-type Unit struct {
+/*
+unit - aggregates accounts.
+*/
+type unit struct {
 	sync.Mutex
 	accounts map[string]*Account
 }
 
-// newUnit - create new Unit.
-func newUnit() *Unit {
-	k := &Unit{accounts: make(map[string]*Account)}
+/*
+newUnit - create new Unit.
+*/
+func newUnit() *unit {
+	k := &unit{accounts: make(map[string]*Account)}
 	return k
 }
 
-func (u *Unit) getAccount(key string) *Account {
+/*
+getAccount - take account by key.
+If there is no such account, it will be created (with zero balance).
+*/
+func (u *unit) getAccount(key string) *Account {
 	a, ok := u.accounts[key]
 	if !ok {
 		u.Lock()
@@ -36,7 +45,11 @@ func (u *Unit) getAccount(key string) *Account {
 	return a
 }
 
-func (u *Unit) total() map[string]int64 {
+/*
+total - current balance of all accounts.
+At the time of the formation of the answer will be a lock.
+*/
+func (u *unit) total() map[string]int64 {
 	t := make(map[string]int64)
 	u.Lock()
 	for k, a := range u.accounts {
@@ -46,7 +59,11 @@ func (u *Unit) total() map[string]int64 {
 	return t
 }
 
-func (u *Unit) totalUnsave() map[string]int64 {
+/*
+totalUnsafe - current balance of all accounts (fast and unsafe).
+Without locking. Use this method only in serial (non-parallel) mode.
+*/
+func (u *unit) totalUnsafe() map[string]int64 {
 	t := make(map[string]int64)
 	for k, a := range u.accounts {
 		t[k] = a.total()
@@ -54,7 +71,11 @@ func (u *Unit) totalUnsave() map[string]int64 {
 	return t
 }
 
-func (u *Unit) delAccount(key string) errorCodes {
+/*
+delAccount - delete account.
+The account can not be deleted if it is not stopped or has a non-zero balance.
+*/
+func (u *unit) delAccount(key string) errorCodes {
 	u.Lock()
 	defer u.Unlock()
 	a, ok := u.accounts[key]
@@ -87,30 +108,49 @@ func (u *Unit) delAccountUnsafe(key string) errorCodes {
 }
 */
 
-func (u *Unit) delAllAccounts() ([]string, errorCodes) {
+/*
+delAllAccounts - delete all accounts.
+On error, a list of non-stopped or non-empty accounts is returned.
+
+Returned codes:
+	ErrCodeAccountNotStop // not stopped
+	ErrCodeUnitNotEmpty // not empty
+	Ok
+*/
+func (u *unit) delAllAccounts() ([]string, errorCodes) {
 	u.Lock()
 	defer u.Unlock()
 	if notStop := u.stop(); len(notStop) != 0 {
 		return notStop, ErrCodeAccountNotStop
 	}
-	if notDel := u.del(); len(notDel) != 0 {
+	if notDel := u.delStoppedAccounts(); len(notDel) != 0 {
 		return notDel, ErrCodeUnitNotEmpty
 	}
 
 	return nil, Ok
 }
 
-func (u *Unit) del() []string {
+/*
+delStoppedAccounts - delete all accounts (they are stopped).
+Returns a list of not deleted accounts (with a non-zero balance).
+*/
+func (u *unit) delStoppedAccounts() []string {
 	notDel := make([]string, 0, len(u.accounts))
 	for k, a := range u.accounts {
 		if a.total() != 0 {
 			notDel = append(notDel, k)
+		} else {
+			delete(u.accounts, k)
 		}
 	}
 	return notDel
 }
 
-func (u *Unit) start() []string {
+/*
+start - start all accounts.
+Returns a list of not starting accounts.
+*/
+func (u *unit) start() []string {
 	notStart := make([]string, 0, len(u.accounts))
 	for k, a := range u.accounts {
 		if !a.start() {
@@ -120,7 +160,11 @@ func (u *Unit) start() []string {
 	return notStart
 }
 
-func (u *Unit) stop() []string {
+/*
+stop - stop all accounts.
+Returns a list of non-stopped accounts.
+*/
+func (u *unit) stop() []string {
 	notStop := make([]string, 0, len(u.accounts))
 	for k, a := range u.accounts {
 		if !a.stop() {

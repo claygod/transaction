@@ -64,11 +64,11 @@ func TestUnitDelAllAccount(t *testing.T) {
 func TestUnitDel(t *testing.T) {
 	u := newUnit()
 	u.getAccount("USD")
-	if lst := u.del(); len(lst) != 0 {
+	if lst := u.delStoppedAccounts(); len(lst) != 0 {
 		t.Error("It was not possible to delete all accounts (but this is possible)")
 	}
 	u.getAccount("USD").addition(5)
-	if lst := u.del(); len(lst) == 0 {
+	if lst := u.delStoppedAccounts(); len(lst) == 0 {
 		t.Error("It turned out to delete all accounts (but this is impossible)")
 	}
 }

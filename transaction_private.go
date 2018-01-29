@@ -4,11 +4,9 @@ package transactor
 // Transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
-//"errors"
-// import "log"
-
-//"fmt"
-
+/*
+newTransaction - create new Transaction.
+*/
 func newTransaction(c *Core) *Transaction {
 	t := &Transaction{
 		core: c,
@@ -18,29 +16,26 @@ func newTransaction(c *Core) *Transaction {
 	return t
 }
 
-/**/
+/*
+exeTransaction - execution of a transaction.
+*/
 func (t *Transaction) exeTransaction() errorCodes {
+	// catch (core)
 	if !t.core.catch() {
-		t.core.lgr.New().Context("Msg", errMsgCoreNotCatch).Context("Method", "exeTransaction").Write()
+		t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
 		return ErrCodeCoreCatch
 	}
 	defer t.core.throw()
 
 	// fill
-	//for i, r := range t.reqs {
-	//	a, err := t.tn.getAccount(r.id, r.key)
-	//	if err != Ok {
-	//		t.tn.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
-	//	}
-	//	t.reqs[i].account = a
-	//}
 	if err := t.fill(); err != Ok {
-		t.core.lgr.New().Context("Msg", errMsgTransactionNotFill).Context("Method", "exeTransaction").Write()
+		t.core.lgr.log(errMsgTransactionNotFill).context("Method", "exeTransaction").send()
 		return err
 	}
 
+	// catch (accounts)
 	if err := t.catch(); err != Ok {
-		t.core.lgr.New().Context("Msg", errMsgTransactionNotCatch).Context("Method", "exeTransaction").Write()
+		t.core.lgr.log(errMsgTransactionNotCatch).context("Method", "exeTransaction").send()
 		return err
 	}
 	// addition
@@ -48,9 +43,9 @@ func (t *Transaction) exeTransaction() errorCodes {
 		if res := i.account.addition(i.amount); res < 0 {
 			t.rollback(num)
 			t.throw(len(t.reqs))
-			t.core.lgr.New().Context("Msg", errMsgAccountCredit).Context("Unit", i.id).
-				Context("Account", i.key).Context("Amount", i.amount).
-				Context("Method", "exeTransaction").Context("Wrong balance", res).Write()
+			t.core.lgr.log(errMsgAccountCredit).context("Unit", i.id).
+				context("Account", i.key).context("Amount", i.amount).
+				context("Method", "exeTransaction").context("Wrong balance", res).send()
 			return ErrCodeTransactionCredit
 		}
 	}
@@ -59,13 +54,18 @@ func (t *Transaction) exeTransaction() errorCodes {
 	return Ok
 }
 
+/*
+rollback - rolled back account operations.
+*/
 func (t *Transaction) rollback(num int) {
 	for i := 0; i < num; i++ {
-		//log.Print("~~~~~~~~~", i)
 		t.reqs[i].account.addition(-t.reqs[i].amount)
 	}
 }
 
+/*
+fill - getting accounts in the list.
+*/
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
 		a, err := t.core.getAccount(r.id, r.key)
@@ -78,18 +78,24 @@ func (t *Transaction) fill() errorCodes {
 	return Ok
 }
 
+/*
+catch - obtaining permissions from accounts.
+*/
 func (t *Transaction) catch() errorCodes {
 	for i, r := range t.reqs {
 		if !r.account.catch() {
 			t.throw(i)
-			t.core.lgr.New().Context("Msg", errMsgAccountNotCatch).Context("Unit", r.id).
-				Context("Account", r.key).Context("Method", "catch").Write()
+			t.core.lgr.log(errMsgAccountNotCatch).context("Unit", r.id).
+				context("Account", r.key).context("Method", "catch").send()
 			return ErrCodeTransactionCatch
 		}
 	}
 	return Ok
 }
 
+/*
+throw - remove permissions in accounts.
+*/
 func (t *Transaction) throw(num int) {
 	for i, r := range t.reqs {
 		if i >= num {
