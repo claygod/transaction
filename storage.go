@@ -17,7 +17,7 @@ const storageNumber uint64 = 1 << storageDegree
 const storageShift uint64 = 64 - storageDegree
 
 /*
- Storage - provides access to Sections with units.
+Storage - provides access to Sections with units.
 */
 type Storage struct {
 	data [storageNumber]*Section
@@ -52,7 +52,7 @@ func (s *Storage) id(id int64) uint64 {
 }
 
 /*
- Section - provides access to units.
+Section - provides access to units.
 */
 type Section struct {
 	sync.Mutex

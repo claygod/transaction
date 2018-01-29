@@ -16,7 +16,7 @@ import (
 )
 
 /*
- Core - root application structure
+Core - root application structure
 */
 type Core struct {
 	m       sync.Mutex
