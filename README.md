@@ -83,11 +83,22 @@ tr.Begin().
 ### Save / Load
 
 ```go
-// Example of buying two shares of "Apple" for $10
-tr.Begin().
-	Credit(buyerId, "USD", 10).Debit(sellerId, "USD", 10).
-	Debit(sellerId, "APPLE", 2).Credit(buyerId, "APPLE", 2).
-	End()
+// Save
+	tr := New()
+	tr.Start()
+	tr.AddUnit(123)
+	tr.Begin().Debit(123, "USD", 7).End()
+	tr.Save(path)
+	...
+```
+
+```go
+// Load
+	tr := New()
+	tr.Start()
+	tr.Load(path)
+	tr.Begin().Credit(123, "USD", 7).End()
+	...
 ```
 
 ### Example
@@ -234,7 +245,8 @@ I have a single-core processor, should I use your library in this case?
 
 ## ToDo
 
-- Example of using a library as a server
+- [x] Draw a sequence diagram
+- [ ] Example of using a library as a server
 
 ## Bench
 

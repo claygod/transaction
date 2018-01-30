@@ -123,44 +123,10 @@ func TestCoreGetAccount(t *testing.T) {
 	}
 }
 
-/*
-
-func TestCoreUnsafe(t *testing.T) {
-	tr := New()
-	tr.Start()
-	tr.AddUnit(123)
-
-	reqs := []*Request{
-		&Request{id: 123, key: "USD", amount: 10},
-	}
-	//Unsafe(&tr, reqs)
-
-	if tr.Unsafe(reqs) != Ok {
-		t.Error("Transaction error in Unsafe mode")
-	}
-
-	if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
-		t.Error("Invalid transaction result")
-	}
-}
-*/
 func TestCoreAddUnit(t *testing.T) {
 	tr := New()
 	tr.Start()
-	//tr.AddUnit(123)
 
-	//reqs := []*Request{
-	//	&Request{id: 123, key: "USD", amount: 10},
-	//}
-	//Unsafe(&tr, reqs)
-
-	//if tr.Unsafe(reqs) != Ok {
-	//	t.Error("Transaction error in Unsafe mode")
-	//}
-
-	//if res, _ := tr.TotalAccount(123, "USD"); res != 10 {
-	//	t.Error("Invalid transaction result")
-	//}
 	if tr.AddUnit(123) != Ok {
 		t.Error("Unable to add unit")
 	}
@@ -193,10 +159,6 @@ func TestCoreDelUnit(t *testing.T) {
 	tr.Begin().Debit(456, "USD", 5).End()
 
 	tr.storage.getUnit(456).getAccount("USD").counter = 1
-	//tr.storage.
-	//	data[tr.storage.id(456)].
-	//	data[456].
-	//	accounts["USD"].counter = 1
 
 	trialLimit = trialStop + 100
 	if _, err := tr.DelUnit(456); err == Ok {
