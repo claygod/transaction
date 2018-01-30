@@ -15,10 +15,6 @@ type errorCodes int
 
 var trialLimit int = trialLimitConst
 
-var (
-	Test1 int = 400
-)
-
 // Hasp state
 const (
 	stateClosed int64 = iota
