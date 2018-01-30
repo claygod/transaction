@@ -201,6 +201,11 @@ Accounts are not zero! You must withdraw money from the account
 Done! Account cleared
 Done! Now the account has been deleted
 ```
+
+## Sequence diagram
+
+![Sequence diagram](./diagram.png)
+
 ## API
 
 - New

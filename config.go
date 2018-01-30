@@ -13,7 +13,7 @@ const separatorSymbol string = ";"
 
 type errorCodes int
 
-var trialLimit int = trialLimitConst
+var trialLimit = trialLimitConst
 
 // Hasp state
 const (
@@ -39,7 +39,6 @@ const (
 	ErrCodeTransactionCatch
 	ErrCodeTransactionCredit
 	ErrCodeTransactionDebit
-	// ErrCodeTransactionLessZero //
 	ErrCodeCoreCatch
 	ErrCodeCoreStart
 	ErrCodeCoreStop
