@@ -4,7 +4,7 @@
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
 
-Embedded transactional database of accounts, running in multithreaded mode.
+Embedded transactional database of accounts, running in multithreaded mode. Coverage 91.3%
 
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
 Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $92,233,720,368,547,758.07
@@ -31,6 +31,10 @@ The library has two main entities: a unit and an account.
 - Balance is calculated only in whole numbers.
 
 ## Usage
+
+Important: in the description of methods all error return codes are written.
+Descriptions in the documentation: https://godoc.org/github.com/claygod/transaction
+The transaction has no limits on the number of credits and debits.
 
 ### Create / delete
 
@@ -225,7 +229,7 @@ I have a single-core processor, should I use your library in this case?
 
 ## ToDo
 
-- Server (authorization and access are ignored)
+- Example of using a library as a server
 
 ## Bench
 

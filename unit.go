@@ -5,8 +5,6 @@ package transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	//"errors"
-	//"log"
 	"sync"
 )
 
@@ -93,20 +91,6 @@ func (u *unit) delAccount(key string) errorCodes {
 
 	return Ok
 }
-
-/*
-func (u *Unit) delAccountUnsafe(key string) errorCodes {
-	u.Lock()
-	defer u.Unlock()
-	_, ok := u.accounts[key]
-	if !ok {
-		return ErrCodeAccountNotExist
-	}
-	delete(u.accounts, key)
-
-	return Ok
-}
-*/
 
 /*
 delAllAccounts - delete all accounts.

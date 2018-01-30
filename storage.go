@@ -5,11 +5,7 @@ package transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	//"errors"
-	//"log"
-	//"runtime"
 	"sync"
-	//"sync/atomic"
 )
 
 const storageDegree uint64 = 16
@@ -17,69 +13,59 @@ const storageNumber uint64 = 1 << storageDegree
 const storageShift uint64 = 64 - storageDegree
 
 /*
-Storage - provides access to Sections with units.
+storage - provides access to sections with units.
 */
-type Storage struct {
-	data [storageNumber]*Section
+type storage struct {
+	data [storageNumber]*section
 }
 
 /*
-newStorage - create new Storage
+newStorage - create new storage
 */
-func newStorage() *Storage {
-	s := &Storage{}
+func newStorage() *storage {
+	s := &storage{}
 	for i := uint64(0); i < storageNumber; i++ {
 		s.data[i] = newSection()
 	}
 	return s
 }
 
-func (s *Storage) addUnit(id int64) bool {
+func (s *storage) addUnit(id int64) bool {
 	section := s.data[(uint64(id)<<storageShift)>>storageShift]
 	return section.addUnit(id)
 }
 
-func (s *Storage) getUnit(id int64) *unit {
+func (s *storage) getUnit(id int64) *unit {
 	return s.data[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
 }
 
-func (s *Storage) delUnit(id int64) (*unit, bool) {
+func (s *storage) delUnit(id int64) (*unit, bool) {
 	return s.data[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
 }
 
-func (s *Storage) id(id int64) uint64 {
+func (s *storage) id(id int64) uint64 {
 	return (uint64(id) << storageShift) >> storageShift
 }
 
 /*
-Section - provides access to units.
+section - provides access to units.
 */
-type Section struct {
+type section struct {
 	sync.Mutex
 	data map[int64]*unit
 }
 
-// newSection - create new Section
-func newSection() *Section {
-	s := &Section{
+/*
+ newSection - create new section
+*/
+func newSection() *section {
+	s := &section{
 		data: make(map[int64]*unit),
 	}
 	return s
 }
 
-/*
-func (s *Section) lock() bool {
-	for i := trialLimit; i > trialStop; i-- {
-		if atomic.CompareAndSwapInt64(&s.hasp, 0, 1) {
-			return true
-		}
-		runtime.Gosched()
-	}
-	return false
-}
-*/
-
-func (s *Section) addUnit(id int64) bool {
+func (s *section) addUnit(id int64) bool {
 	s.Lock()
 	defer s.Unlock()
 	if _, ok := s.data[id]; !ok {
@@ -89,14 +75,14 @@ func (s *Section) addUnit(id int64) bool {
 	return false
 }
 
-func (s *Section) getUnit(id int64) *unit {
+func (s *section) getUnit(id int64) *unit {
 	if u, ok := s.data[id]; ok {
 		return u
 	}
 	return nil
 }
 
-func (s *Section) delUnit(id int64) (*unit, bool) {
+func (s *section) delUnit(id int64) (*unit, bool) {
 	s.Lock()
 	defer s.Unlock()
 

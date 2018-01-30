@@ -23,7 +23,7 @@ type Core struct {
 	counter int64
 	hasp    int64
 	lgr     *logger
-	storage *Storage
+	storage *storage
 }
 
 /*

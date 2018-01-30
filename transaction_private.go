@@ -72,6 +72,11 @@ func (t *Transaction) rollback(num int) {
 
 /*
 fill - getting accounts in the list.
+
+Returned codes:
+
+	ErrCodeUnitNotExist // unit not exist
+	Ok
 */
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
@@ -87,6 +92,11 @@ func (t *Transaction) fill() errorCodes {
 
 /*
 catch - obtaining permissions from accounts.
+
+Returned codes:
+
+	ErrCodeTransactionCatch // account not allowed operation
+	Ok
 */
 func (t *Transaction) catch() errorCodes {
 	for i, r := range t.reqs {
