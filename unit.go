@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Unit
@@ -51,11 +51,11 @@ At the time of the formation of the answer will be a lock.
 */
 func (u *unit) total() map[string]int64 {
 	t := make(map[string]int64)
-	u.Lock()
+	//u.Lock()
 	for k, a := range u.accounts {
 		t[k] = a.total()
 	}
-	u.Unlock()
+	//u.Unlock()
 	return t
 }
 
@@ -124,6 +124,7 @@ func (u *unit) delAllAccounts() ([]string, errorCodes) {
 		return notStop, ErrCodeAccountNotStop
 	}
 	if notDel := u.delStoppedAccounts(); len(notDel) != 0 {
+		u.start() // Undeleted accounts are restarted
 		return notDel, ErrCodeUnitNotEmpty
 	}
 

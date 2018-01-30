@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Public
@@ -67,7 +67,7 @@ In case of an error, a list of not deleted accounts is returned.
 
 Returned codes:
 	ErrCodeCoreCatch // not obtained permission
-	ErrCodeUnitExist // there is no such unit
+	ErrCodeUnitNotExist // there is no such unit
 	ErrCodeAccountNotStop // accounts failed to stop
 	ErrCodeUnitNotEmpty // accounts are not zero
 	Ok
@@ -79,8 +79,8 @@ func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 	}
 	defer c.throw()
 
-	un, ok := c.storage.delUnit(id)
-	if !ok {
+	un := c.storage.getUnit(id)
+	if un == nil {
 		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
 		return nil, ErrCodeUnitNotExist
 	}
@@ -89,6 +89,13 @@ func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 		go c.lgr.log(errMsgUnitNotDelAll).context("Error code", err).context("Unit", id).context("Method", "DelUnit").send()
 		return accList, err
 	}
+
+	_, ok := c.storage.delUnit(id)
+	if !ok {
+		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
+		return nil, ErrCodeUnitNotExist
+	}
+
 	return nil, Ok
 }
 
@@ -181,6 +188,7 @@ func (c *Core) Stop() (bool, int64) {
 /*
 Load - loading data from a file.
 The application stops for the duration of this operation.
+The existing accounts are not overwritten.
 
 Returned codes:
 	ErrCodeCoreStop // unable to stop app
@@ -234,7 +242,7 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 		if _, ok := un.accounts[string(a[2])]; !ok {
 			un.accounts[string(a[2])] = newAccount(balance)
 		} else {
-			// обработка ошибки
+			// The existing accounts are not overwritten
 			notLoad[id] = string(a[2])
 		}
 

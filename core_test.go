@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Test
@@ -12,6 +12,29 @@ import (
 	"strconv"
 	"testing"
 )
+
+func TestUsage(t *testing.T) {
+	path := "./test.tdb"
+	tr := New()
+	if !tr.Start() {
+		t.Error("Now the start is possible!")
+	}
+
+	tr.AddUnit(123)
+	tr.Begin().Debit(123, "USD", 7777).End()
+	tr.Save(path)
+
+	if _, err := tr.DelUnit(123); err == Ok {
+		t.Error(err)
+	}
+
+	if err := tr.Begin().Debit(123, "USD", 7777).End(); err != Ok {
+		t.Error(err)
+	}
+
+	tr.Stop()
+	os.Remove(path)
+}
 
 func TestTransfer(t *testing.T) {
 	tr := New()
@@ -42,7 +65,6 @@ func TestTransfer(t *testing.T) {
 		End(); err != Ok {
 		t.Error(err)
 	}
-
 }
 
 func TestCoreStart(t *testing.T) {

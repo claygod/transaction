@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Account test
@@ -40,6 +40,12 @@ func TestUnitDelAccount(t *testing.T) {
 	if u.delAccount("USD") != Ok {
 		t.Error("Account not deleted, although it is possible")
 	}
+	u.getAccount("USD").counter = permitError + 1
+	trialLimit = trialStop + 100
+	if u.delAccount("USD") != ErrCodeAccountNotStop {
+		t.Error("Account not deleted, although it is possible222")
+	}
+	trialLimit = trialLimitConst
 }
 
 func TestUnitDelAllAccount(t *testing.T) {
@@ -94,11 +100,11 @@ func TestUnitStart(t *testing.T) {
 	if lst := u.start(); len(lst) != 0 {
 		t.Error("I could start all accounts (but it's impossible)")
 	}
-
-	//u.getAccount("USD").counter = 1
-	//trialLimit = trialStop + 100
-	//if lst := u.start(); len(lst) != 1 {
-	//	t.Error(len(lst))
-	//}
-	//trialLimit = trialLimitConst
+	u.stop()
+	trialLimit = trialStop + 100
+	u.getAccount("USD").counter = permitError + 1
+	if lst := u.start(); len(lst) != 1 {
+		t.Error("One account should not have started.")
+	}
+	trialLimit = trialLimitConst
 }

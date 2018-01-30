@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Config
@@ -14,6 +14,10 @@ const separatorSymbol string = ";"
 type errorCodes int
 
 var trialLimit int = trialLimitConst
+
+var (
+	Test1 int = 400
+)
 
 // Hasp state
 const (

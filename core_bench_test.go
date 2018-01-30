@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Bench
@@ -8,6 +8,45 @@ import (
 	// "sync/atomic"
 	"testing"
 )
+
+func BenchmarkTotalUnitSequence(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 223372036854775).End()
+	}
+	u := 0
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		tr.TotalUnit(int64(uint16(u)))
+		u++
+	}
+}
+
+func BenchmarkTotalUnitParallel(b *testing.B) {
+	b.StopTimer()
+
+	tr := New()
+	tr.Start()
+	tr.AddUnit(1234567)
+	tr.Begin().Debit(1234567, "USD", 223372036854775806).End()
+	for i := int64(0); i < 65536; i++ {
+		tr.AddUnit(i)
+		tr.Begin().Debit(i, "USD", 223372036854775).End()
+	}
+
+	u := 0
+	b.StartTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			tr.TotalUnit(int64(uint16(u)))
+			u++
+		}
+	})
+}
 
 func BenchmarkCreditSequence(b *testing.B) {
 	b.StopTimer()

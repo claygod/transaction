@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Transaction
@@ -10,22 +10,29 @@ newTransaction - create new Transaction.
 func newTransaction(c *Core) *Transaction {
 	t := &Transaction{
 		core: c,
-		up:   make([]*Request, 0, usualNumTransaction),
-		reqs: make([]*Request, 0, usualNumTransaction),
+		up:   make([]*request, 0, usualNumTransaction),
+		reqs: make([]*request, 0, usualNumTransaction),
 	}
 	return t
 }
 
 /*
 exeTransaction - execution of a transaction.
+
+Returned codes:
+
+	ErrCodeUnitNotExist // unit  not exist
+	ErrCodeTransactionCatch // account not catch
+	ErrCodeTransactionCredit // such a unit already exists
+	Ok
 */
 func (t *Transaction) exeTransaction() errorCodes {
 	// catch (core)
-	if !t.core.catch() {
-		t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
-		return ErrCodeCoreCatch
-	}
-	defer t.core.throw()
+	//if !t.core.catch() {
+	//	t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
+	//	return ErrCodeCoreCatch
+	//}
+	//defer t.core.throw()
 
 	// fill
 	if err := t.fill(); err != Ok {
@@ -86,7 +93,9 @@ func (t *Transaction) catch() errorCodes {
 		if !r.account.catch() {
 			t.throw(i)
 			t.core.lgr.log(errMsgAccountNotCatch).context("Unit", r.id).
-				context("Account", r.key).context("Method", "catch").send()
+				context("Account", r.key).context("Method", "Transaction.catch").
+				context("Acc counter", r.account.counter).
+				context("Acc balance", r.account.balance).send()
 			return ErrCodeTransactionCatch
 		}
 	}
@@ -103,4 +112,14 @@ func (t *Transaction) throw(num int) {
 		}
 		r.account.throw()
 	}
+}
+
+/*
+request - single operation data
+*/
+type request struct {
+	id      int64
+	key     string
+	amount  int64
+	account *Account
 }

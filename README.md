@@ -4,6 +4,8 @@
 [![API documentation](https://godoc.org/github.com/claygod/transaction?status.svg)](https://godoc.org/github.com/claygod/transaction)
 [![Go Report Card](https://goreportcard.com/badge/github.com/claygod/transaction)](https://goreportcard.com/report/github.com/claygod/transaction)
 
+Embedded transactional database of accounts, running in multithreaded mode.
+
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
 Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $92,233,720,368,547,758.07
 
@@ -30,7 +32,14 @@ The library has two main entities: a unit and an account.
 
 ## Usage
 
-### Create / delete account
+### Create / delete
+
+```go
+tr := transaction.New()
+tr.Start()
+tr.AddUnit(123)
+tr.DelUnit(123)
+```	
 
 ### Credit/debit of an account
 
@@ -67,13 +76,139 @@ tr.Begin().
 	End()
 ```
 
+### Save / Load
+
+```go
+// Example of buying two shares of "Apple" for $10
+tr.Begin().
+	Credit(buyerId, "USD", 10).Debit(sellerId, "USD", 10).
+	Debit(sellerId, "APPLE", 2).Credit(buyerId, "APPLE", 2).
+	End()
+```
+
+### Example
+
+```go
+package main
+
+import (
+	"fmt"
+
+	tn "github.com/claygod/transaction"
+)
+
+func main() {
+	tr := tn.New()
+	tr.Start()
+
+	// add unit
+	switch res := tr.AddUnit(123); res {
+	case tn.Ok:
+		fmt.Println("Done! Unit created")
+	case tn.ErrCodeCoreCatch:
+		fmt.Println("Not obtained permission")
+	case tn.ErrCodeUnitExist:
+		fmt.Println("Such a unit already exists")
+	default:
+		fmt.Println("Unknown error")
+	}
+
+	// transaction
+	switch res := tr.Begin().Debit(123, "USD", 5).End(); res {
+	case tn.Ok:
+		fmt.Println("Done! Money added")
+	case tn.ErrCodeUnitNotExist:
+		fmt.Println("Unit  not exist")
+	case tn.ErrCodeTransactionCatch:
+		fmt.Println("Account not catch")
+	case tn.ErrCodeTransactionCredit:
+		fmt.Println("Such a unit already exists")
+	default:
+		fmt.Println("Unknown error")
+	}
+
+	// save
+	switch res := tr.Save("./test.tdb"); res {
+	case tn.Ok:
+		fmt.Println("Done! Data saved to file")
+	case tn.ErrCodeCoreStop:
+		fmt.Println("Unable to stop app")
+	case tn.ErrCodeSaveCreateFile:
+		fmt.Println("Could not create file")
+	default:
+		fmt.Println("Unknown error")
+	}
+
+	// del unit (There will be an error!)
+	switch _, res := tr.DelUnit(123); res {
+	case tn.Ok:
+		fmt.Println("Done!")
+	case tn.ErrCodeCoreCatch:
+		fmt.Println("Not obtained permission")
+	case tn.ErrCodeUnitExist:
+		fmt.Println("There is no such unit")
+	case tn.ErrCodeAccountNotStop:
+		fmt.Println("Accounts failed to stop")
+	case tn.ErrCodeUnitNotEmpty:
+		fmt.Println("Accounts are not zero! You must withdraw money from the account")
+	default:
+		fmt.Println("Unknown error")
+	}
+
+	// transaction
+	switch res := tr.Begin().Credit(123, "USD", 5).End(); res {
+	case tn.Ok:
+		fmt.Println("Done! Account cleared")
+	case tn.ErrCodeUnitNotExist:
+		fmt.Println("Unit not exist")
+	case tn.ErrCodeTransactionCatch:
+		fmt.Println("Account not catch")
+	case tn.ErrCodeTransactionCredit:
+		fmt.Println("Such a unit already exists")
+	default:
+		fmt.Println("Unknown error")
+	}
+
+	// del unit (Now it will work out!)
+	switch _, res := tr.DelUnit(123); res {
+	case tn.Ok:
+		fmt.Println("Done! Now the account has been deleted")
+	case tn.ErrCodeCoreCatch:
+		fmt.Println("Not obtained permission")
+	case tn.ErrCodeUnitNotExist:
+		fmt.Println("There is no such unit")
+	case tn.ErrCodeAccountNotStop:
+		fmt.Println("Accounts failed to stop")
+	case tn.ErrCodeUnitNotEmpty:
+		fmt.Println("Accounts are not zero")
+	default:
+		fmt.Println(res)
+	}
+}
+```
+
+Output:
+
+```
+Done! Unit created
+Done! Money added
+Done! Data saved to file
+Accounts are not zero! You must withdraw money from the account
+Done! Account cleared
+Done! Now the account has been deleted
+```
 ## API
 
 - New
 - Load ("path")
-- Start (counter)
-- ...
-- Stop (counter)
+- Start ()
+- AddUnit(ID)
+- Begin().Debit(ID, key, amount).End()
+- Begin().Credit(ID, key, amount).End()
+- TotalUnit(ID)
+- TotalAccount(ID, key)
+- DelUnit(ID)
+- Stop ()
 - Save ("path")
 
 ## F.A.Q.

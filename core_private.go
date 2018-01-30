@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Private

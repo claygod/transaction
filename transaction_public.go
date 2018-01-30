@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Transaction
@@ -9,8 +9,8 @@ Transaction - preparation and execution of a transaction
 */
 type Transaction struct {
 	core *Core
-	up   []*Request
-	reqs []*Request
+	up   []*request
+	reqs []*request
 }
 
 /*
@@ -22,7 +22,7 @@ Input variables:
 	count - number (type "uint64" for "less-zero" safety)
 */
 func (t *Transaction) Debit(customer int64, account string, count uint64) *Transaction {
-	t.up = append(t.up, &Request{id: customer, key: account, amount: int64(count)})
+	t.up = append(t.up, &request{id: customer, key: account, amount: int64(count)})
 	return t
 }
 
@@ -35,24 +35,21 @@ Input variables:
 	count - number (type "uint64" for "less-zero" safety)
 */
 func (t *Transaction) Credit(customer int64, account string, count uint64) *Transaction {
-	t.reqs = append(t.reqs, &Request{id: customer, key: account, amount: -(int64(count))})
+	t.reqs = append(t.reqs, &request{id: customer, key: account, amount: -(int64(count))})
 	return t
 }
 
 /*
 End - complete the data preparation and proceed with the transaction.
+
+Returned codes:
+
+	ErrCodeUnitNotExist // unit  not exist
+	ErrCodeTransactionCatch // account not catch
+	ErrCodeTransactionCredit // such a unit already exists
+	Ok
 */
 func (t *Transaction) End() errorCodes {
 	t.reqs = append(t.reqs, t.up...)
 	return t.exeTransaction()
-}
-
-/*
-Request - single operation data
-*/
-type Request struct {
-	id      int64
-	key     string
-	amount  int64
-	account *Account
 }

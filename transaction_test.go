@@ -1,4 +1,4 @@
-package transactor
+package transaction
 
 // Core
 // Test
@@ -41,7 +41,7 @@ func TestTransactionExe(t *testing.T) {
 
 	tr.storage.getUnit(123).accounts["USD"].counter = -1
 
-	if tr.Begin().Debit(123, "USD", 5).End() == Ok {
+	if tr.Begin().Debit(123, "USD", 5).End() != ErrCodeTransactionCatch {
 		t.Error("The transaction could not cath the account")
 	}
 
@@ -49,6 +49,9 @@ func TestTransactionExe(t *testing.T) {
 	if tr.Begin().Debit(123, "USD", 5).End() == Ok {
 		t.Error("The requested unit does not exist")
 	}
+
+	//tr.storage.getUnit(123).accounts["USD"].counter = 0
+	//tr.counter = stateClosed
 
 }
 
