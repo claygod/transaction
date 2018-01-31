@@ -34,11 +34,9 @@ func TestTransactionExe(t *testing.T) {
 
 	tr.hasp = stateClosed
 	if tr.Begin().Debit(123, "USD", 5).End() != ErrCodeCoreCatch {
-		t.Error("Error executing a transaction2222")
+		t.Error("Resource is locked and can not allow operation")
 	}
 	tr.hasp = stateOpen
-
-	//tn := tr.Begin().Debit(123, "USD", 5)
 
 	if tr.Begin().Debit(123, "USD", 5).End() != Ok {
 		t.Error("Error executing a transaction")

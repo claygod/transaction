@@ -202,11 +202,10 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 	var ok bool
 	// here it is possible to change the status of `hasp` ToDo: to fix
 
-	if ok, hasp = c.Stop(); !ok { //  hasp == stateClosed ||
+	if ok, hasp = c.Stop(); !ok {
 		go c.lgr.log(errMsgCoreNotStop).context("Method", "Load").send()
 		return ErrCodeCoreStop, notLoad
 	}
-	//defer c.Start()
 	defer func() {
 		if hasp == stateOpen {
 			c.Start()
@@ -247,13 +246,6 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 		}
 
 	}
-	//if hasp == stateOpen {
-
-	//}
-	//if !c.Start() { // hasp == stateClosed &&
-	//	go c.lgr.New(errMsgCoreNotStart).Context("Method", "Load").Write()
-	//	return ErrCodeCoreStart
-	//}
 	return Ok, notLoad
 }
 
@@ -267,7 +259,6 @@ Returned codes:
 	Ok
 */
 func (c *Core) Save(path string) errorCodes {
-	//hasp := atomic.LoadInt64(&c.hasp)
 	var hasp int64
 	var ok bool
 	if ok, hasp = c.Stop(); !ok {
@@ -293,10 +284,6 @@ func (c *Core) Save(path string) errorCodes {
 		go c.lgr.log(errMsgCoreNotCreateFile).context("Path", path).context("Method", "Save").send()
 		return ErrCodeSaveCreateFile
 	}
-	//if hasp == stateClosed && !c.Start() {
-	//	go c.lgr.New().Context("Msg", errMsgCoreNotStart).Context("Method", "Save").Write()
-	//	return ErrCodeCoreStart
-	//}
 	return Ok
 }
 
