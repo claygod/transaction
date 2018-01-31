@@ -28,11 +28,11 @@ Returned codes:
 */
 func (t *Transaction) exeTransaction() errorCodes {
 	// catch (core)
-	//if !t.core.catch() {
-	//	t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
-	//	return ErrCodeCoreCatch
-	//}
-	//defer t.core.throw()
+	if !t.core.catch() {
+		t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
+		return ErrCodeCoreCatch
+	}
+	defer t.core.throw()
 
 	// fill
 	if err := t.fill(); err != Ok {
