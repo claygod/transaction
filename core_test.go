@@ -6,7 +6,6 @@ package transaction
 
 import (
 	"bytes"
-	// "fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
@@ -38,9 +37,7 @@ func TestUsage(t *testing.T) {
 
 func TestTransfer(t *testing.T) {
 	tr := New()
-	//tr.Load("test.tdb")
 	tr.Start()
-	//ta.Transfer().From(1).To(2).Account("ABC").Count(5).Do()
 	tr.AddUnit(14760464)
 	tr.AddUnit(2674560)
 
@@ -50,16 +47,11 @@ func TestTransfer(t *testing.T) {
 	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != Ok {
 		t.Error(err)
 	}
-	//t.Error("------", ta.Begin().Credit(2674560, "USD", 9).End())
 	if err := tr.Begin().Credit(2674560, "USD", 2).End(); err != Ok {
 		t.Error(err)
 	}
-	//tr.Save("test.tdb")
-	//tr.Load("test.tdb")
 
 	if err := tr.Begin().
-		//Op(2674560, "USD", -4).
-		//Op(14760464, "USD", 4).
 		Credit(2674560, "USD", 4).
 		Debit(14760464, "USD", 4).
 		End(); err != Ok {
@@ -68,7 +60,6 @@ func TestTransfer(t *testing.T) {
 }
 
 func TestCoreStart(t *testing.T) {
-	//trialLimit = 200
 	tr := New()
 
 	if !tr.Start() {
@@ -76,14 +67,9 @@ func TestCoreStart(t *testing.T) {
 	}
 	tr.Stop()
 	trialLimit = trialStop
-	//tr.hasp = stateClosed
 	if tr.Start() {
 		t.Error("Now the start is possible!")
 	}
-	//t.Error(tr.Stop())
-	//t.Error(tr.hasp)
-	//t.Error(tr.counter)
-	//t.Error(stateClosed)
 
 	trialLimit = trialLimitConst
 }
@@ -192,6 +178,12 @@ func TestCoreTotalUnit(t *testing.T) {
 	if _, err := tr.TotalUnit(456); err == Ok {
 		t.Error("A unit does not exist, there must be an error")
 	}
+
+	tr.hasp = stateClosed
+	if _, err := tr.TotalUnit(123); err != ErrCodeCoreCatch {
+		t.Error("Resource is locked and can not allow operation")
+	}
+	tr.hasp = stateOpen
 }
 
 func TestCoreTotalAccount(t *testing.T) {
@@ -217,6 +209,12 @@ func TestCoreTotalAccount(t *testing.T) {
 	if balance, err := tr.TotalAccount(123, "EUR"); err != Ok || balance != 0 {
 		t.Error("A account does not exist, there must be an error")
 	}
+
+	tr.hasp = stateClosed
+	if _, err := tr.TotalAccount(123, "USD"); err != ErrCodeCoreCatch {
+		t.Error("Resource is locked and can not allow operation")
+	}
+	tr.hasp = stateOpen
 }
 
 func TestCoreSave(t *testing.T) {
@@ -275,8 +273,6 @@ func TestCoreLoad(t *testing.T) {
 	tr.Start()
 	tr.AddUnit(123)
 	tr.Begin().Debit(123, "USD", 7).End()
-	// --- tr.AddUnit(456)
-	// -- tr.Begin().Debit(456, "USD", 12).End()
 	tr.Save(path)
 	tr.Stop()
 	tr2 := New()
@@ -286,7 +282,6 @@ func TestCoreLoad(t *testing.T) {
 	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("The file `%s` does exist", pathFake)
 	}
-	//tr2.Load(path)
 	tr2.Start()
 	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("Error loading the database file (%d)", res)

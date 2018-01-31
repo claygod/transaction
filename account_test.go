@@ -5,7 +5,6 @@ package transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	//"runtime"
 	"testing"
 )
 
@@ -42,21 +41,6 @@ func TestAccountCredit(t *testing.T) {
 	if b := a.addition(-1); b != 48 {
 		t.Error("Awaiting 48 and received:", b)
 	}
-	//if a.credit(1) == permitError {
-	//	t.Error("Account must not be blocked! The number of waiting cycles exceeded.")
-	//}
-	/*
-		// Этот тест может быть не проходить
-		trialLimit = trialStop
-		for i := 0; i < 50; i++ {
-			go a.debit(1)
-			//runtime.Gosched()
-		}
-		if x := a.credit(5); x != permitError {
-			t.Error(x)
-		}
-		trialLimit = trialLimitConst
-	*/
 }
 
 func TestAccountDebit(t *testing.T) {

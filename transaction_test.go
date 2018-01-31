@@ -5,7 +5,6 @@ package transaction
 // Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
 
 import (
-	//"fmt"
 	"testing"
 )
 
@@ -33,13 +32,18 @@ func TestTransactionExe(t *testing.T) {
 	tr.Start()
 	tr.AddUnit(123)
 
+	tr.hasp = stateClosed
+	if tr.Begin().Debit(123, "USD", 5).End() != ErrCodeCoreCatch {
+		t.Error("Error executing a transaction2222")
+	}
+	tr.hasp = stateOpen
+
 	//tn := tr.Begin().Debit(123, "USD", 5)
 
 	if tr.Begin().Debit(123, "USD", 5).End() != Ok {
 		t.Error("Error executing a transaction")
 	}
-
-	tr.storage.getUnit(123).accounts["USD"].counter = -1
+	tr.storage.getUnit(123).getAccount("USD").counter = -1
 
 	if tr.Begin().Debit(123, "USD", 5).End() != ErrCodeTransactionCatch {
 		t.Error("The transaction could not cath the account")
@@ -49,10 +53,6 @@ func TestTransactionExe(t *testing.T) {
 	if tr.Begin().Debit(123, "USD", 5).End() == Ok {
 		t.Error("The requested unit does not exist")
 	}
-
-	//tr.storage.getUnit(123).accounts["USD"].counter = 0
-	//tr.counter = stateClosed
-
 }
 
 func TestTransactionCatch(t *testing.T) {
@@ -64,14 +64,14 @@ func TestTransactionCatch(t *testing.T) {
 	tr.Begin().Debit(2, "USD", 5).End()
 
 	tn := tr.Begin().Credit(1, "USD", 1)
-	tn.reqs[0].account = tr.storage.getUnit(1).accounts["USD"]
+	tn.reqs[0].account = tr.storage.getUnit(1).getAccount("USD")
 	if tn.catch() != Ok {
 		t.Error("TestTransactionCatch")
 	}
-	tr.storage.getUnit(1).accounts["USD"].counter = -1
+	tr.storage.getUnit(1).getAccount("USD").counter = -1
 
 	tn2 := tr.Begin().Credit(1, "USD", 2)
-	tn2.reqs[0].account = tr.storage.getUnit(1).accounts["USD"]
+	tn2.reqs[0].account = tr.storage.getUnit(1).getAccount("USD")
 
 	if tn2.catch() == Ok {
 		t.Error("TestTransactionCatch 222")
@@ -98,24 +98,3 @@ func TestTransactionRollback(t *testing.T) {
 	}
 
 }
-
-/*
-func TestDebitPrepare(t *testing.T) {
-	tr := New()
-	tr.Start()
-	tn := tr.Begin()
-	tn = tn.Debit(123, "USD", 5)
-	if len(tn.up) != 1 {
-		t.Error("When preparing a transaction, the debit operation is lost.")
-	}
-	if tn.up[0].amount != 5 {
-		t.Error("In the debit operation, the amount.")
-	}
-	if tn.up[0].id != 123 {
-		t.Error("In the debit operation, the ID.")
-	}
-	if tn.up[0].key != "USD" {
-		t.Error("In the debit operation, the name of the value.")
-	}
-}
-*/
