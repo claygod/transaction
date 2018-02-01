@@ -19,7 +19,7 @@ The library has two main entities: a unit and an account.
 
 - A unit can be a customer, a company, etc.
 - A unit can have many accounts (accounts are called a string variable)
-- A unit can not be deleted if at least one of its accounts is not zero
+- A unit cannot be deleted if at least one of its accounts is not zero
 - If a unit receives a certain amount for a nonexistent account, such an account will be created
 
 ### Account
@@ -240,7 +240,7 @@ Does the performance of your library depend on the number of processor cores?
 - Depends on the processor (cache size, number of cores, frequency, generation), and also depends on the RAM (size and speed), the number of accounts, the type of disk (HDD / SSD) when saving and loading.
 
 I have a single-core processor, should I use your library in this case?
-- The performance of the library is very high, so it will not be a brake in your application. However, the system block is better to upgrade ;-)
+- The performance of the library is very high, so it will not be a break in your application. However, the system block is better to upgrade ;-)
 
 
 ## ToDo
