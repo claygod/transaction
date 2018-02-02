@@ -6,7 +6,7 @@ package transaction
 
 import (
 	"fmt"
-	"log"
+	lg "log"
 )
 
 /*
@@ -17,7 +17,7 @@ type logger map[string]interface{}
 /*
 log - return new logger
 */
-func (l logger) log(msg string) logger {
+func log(msg string) logger {
 	return logger{"": msg} //make(logger)
 }
 
@@ -39,5 +39,5 @@ func (l logger) send() {
 			out += fmt.Sprintf("%s: %s. ", k, v)
 		}
 	}
-	log.Print(out)
+	go lg.Print(out)
 }

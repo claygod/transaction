@@ -7,7 +7,7 @@
 Embedded transactional database of accounts, running in multithreaded mode. Coverage 92.8%
 
 The library operates only with integers. If you want to work with hundredths (for example, cents in dollars), multiply everything by 100. For example, a dollar and a half, it will be 150.
-Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account can not be more than $92,233,720,368,547,758.07
+Limit on the maximum account size: 2 to 63 degrees (9,223,372,036,854,775,807). For example: on the account cannot be more than $92,233,720,368,547,758.07
 
 The library works in parallel mode and can process millions of requests per second.
 Parallel requests to the same account should not lead to an erroneous change in the balance of this account.
@@ -136,7 +136,7 @@ func main() {
 		fmt.Println("Unit  not exist")
 	case tn.ErrCodeTransactionCatch:
 		fmt.Println("Account not catch")
-	case tn.ErrCodeTransactionCredit:
+	case tn.ErrCodeTransactionDebit:
 		fmt.Println("Such a unit already exists")
 	default:
 		fmt.Println("Unknown error")

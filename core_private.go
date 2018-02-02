@@ -37,7 +37,7 @@ Returned codes:
 	ErrCodeUnitNotExist // a unit with such an ID does not exist
 	Ok
 */
-func (c *Core) getAccount(id int64, key string) (*Account, errorCodes) {
+func (c *Core) getAccount(id int64, key string) (*account, errorCodes) {
 	u := c.storage.getUnit(id)
 	if u == nil {
 		return nil, ErrCodeUnitNotExist

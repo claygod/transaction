@@ -15,32 +15,31 @@ const storageShift uint64 = 64 - storageDegree
 /*
 storage - provides access to sections with units.
 */
-type storage struct {
-	data [storageNumber]*section
-}
+type storage [storageNumber]*section
 
 /*
 newStorage - create new storage
 */
 func newStorage() *storage {
-	s := &storage{}
+	var s storage
+	//s := &[storageNumber]*section
 	for i := uint64(0); i < storageNumber; i++ {
-		s.data[i] = newSection()
+		s[i] = newSection()
 	}
-	return s
+	return &s
 }
 
 func (s *storage) addUnit(id int64) bool {
-	section := s.data[(uint64(id)<<storageShift)>>storageShift]
+	section := s[(uint64(id)<<storageShift)>>storageShift]
 	return section.addUnit(id)
 }
 
 func (s *storage) getUnit(id int64) *unit {
-	return s.data[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
+	return s[(uint64(id)<<storageShift)>>storageShift].getUnit(id)
 }
 
 func (s *storage) delUnit(id int64) (*unit, bool) {
-	return s.data[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
+	return s[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
 }
 
 func (s *storage) id(id int64) uint64 {

@@ -11,7 +11,6 @@ import (
 	"os"
 	"runtime"
 	"strconv"
-	"sync"
 	"sync/atomic"
 )
 
@@ -19,10 +18,8 @@ import (
 Core - root application structure
 */
 type Core struct {
-	m       sync.Mutex
 	counter int64
 	hasp    int64
-	lgr     *logger
 	storage *storage
 }
 
@@ -32,7 +29,6 @@ New - create new core
 func New() Core {
 	return Core{
 		hasp:    stateOpen,
-		lgr:     &logger{},
 		storage: newStorage(),
 	}
 }
@@ -48,13 +44,13 @@ Returned codes:
 */
 func (c *Core) AddUnit(id int64) errorCodes {
 	if !c.catch() {
-		go c.lgr.log(errMsgCoreNotCatch).context("Unit", id).context("Method", "AddUnit").send()
+		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "AddUnit").send()
 		return ErrCodeCoreCatch
 	}
 	defer c.throw()
 
 	if !c.storage.addUnit(id) {
-		go c.lgr.log(errMsgUnitExist).context("Unit", id).context("Method", "AddUnit").send()
+		log(errMsgUnitExist).context("Unit", id).context("Method", "AddUnit").send()
 		return ErrCodeUnitExist
 	}
 	return Ok
@@ -74,25 +70,25 @@ Returned codes:
 */
 func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 	if !c.catch() {
-		go c.lgr.log(errMsgCoreNotCatch).context("Unit", id).context("Method", "DelUnit").send()
+		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "DelUnit").send()
 		return nil, ErrCodeCoreCatch
 	}
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
 	if un == nil {
-		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
+		log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
 		return nil, ErrCodeUnitNotExist
 	}
 
 	if accList, err := un.delAllAccounts(); err != Ok {
-		go c.lgr.log(errMsgUnitNotDelAll).context("Error code", err).context("Unit", id).context("Method", "DelUnit").send()
+		log(errMsgUnitNotDelAll).context("Error code", err).context("Unit", id).context("Method", "DelUnit").send()
 		return accList, err
 	}
 
 	_, ok := c.storage.delUnit(id)
 	if !ok {
-		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
+		log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
 		return nil, ErrCodeUnitNotExist
 	}
 
@@ -110,14 +106,14 @@ Returned codes:
 */
 func (c *Core) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	if !c.catch() {
-		go c.lgr.log(errMsgCoreNotCatch).context("Unit", id).context("Method", "TotalUnit").send()
+		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "TotalUnit").send()
 		return nil, ErrCodeCoreCatch
 	}
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
 	if un == nil {
-		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Method", "TotalUnit").send()
+		log(errMsgUnitNotExist).context("Unit", id).context("Method", "TotalUnit").send()
 		return nil, ErrCodeUnitNotExist
 	}
 
@@ -136,14 +132,14 @@ Returned codes:
 */
 func (c *Core) TotalAccount(id int64, key string) (int64, errorCodes) {
 	if !c.catch() {
-		go c.lgr.log(errMsgCoreNotCatch).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
+		log(errMsgCoreNotCatch).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
 		return permitError, ErrCodeCoreCatch
 	}
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
 	if un == nil {
-		go c.lgr.log(errMsgUnitNotExist).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
+		log(errMsgUnitNotExist).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
 		return permitError, ErrCodeUnitNotExist
 	}
 	return un.getAccount(key).total(), Ok
@@ -162,7 +158,7 @@ func (c *Core) Start() bool {
 		}
 		runtime.Gosched()
 	}
-	go c.lgr.log(errMsgCoreNotStart).context("Method", "Start").send()
+	log(errMsgCoreNotStart).context("Method", "Start").send()
 	return false
 }
 
@@ -181,7 +177,7 @@ func (c *Core) Stop() (bool, int64) {
 		}
 		runtime.Gosched()
 	}
-	go c.lgr.log(errMsgCoreNotStop).context("Method", "Stop").send()
+	log(errMsgCoreNotStop).context("Method", "Stop").send()
 	return false, atomic.LoadInt64(&c.hasp)
 }
 
@@ -203,7 +199,7 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 	// here it is possible to change the status of `hasp` ToDo: to fix
 
 	if ok, hasp = c.Stop(); !ok {
-		go c.lgr.log(errMsgCoreNotStop).context("Method", "Load").send()
+		log(errMsgCoreNotStop).context("Method", "Load").send()
 		return ErrCodeCoreStop, notLoad
 	}
 	defer func() {
@@ -213,7 +209,7 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 	}()
 	bs, err := ioutil.ReadFile(path)
 	if err != nil {
-		go c.lgr.log(errMsgCoreNotReadFile).context("Path", path).context("Method", "Load").send()
+		log(errMsgCoreNotReadFile).context("Path", path).context("Method", "Load").send()
 		return ErrCodeLoadReadFile, notLoad
 	}
 	endLine := []byte(endLineSymbol)
@@ -225,12 +221,12 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 		}
 		id, err := strconv.ParseInt(string(a[0]), 10, 64)
 		if err != nil {
-			go c.lgr.log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
+			log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
 			return ErrCodeLoadStrToInt64, notLoad
 		}
 		balance, err := strconv.ParseInt(string(a[1]), 10, 64)
 		if err != nil {
-			go c.lgr.log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
+			log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
 			return ErrCodeLoadStrToInt64, notLoad
 		}
 		un := c.storage.getUnit(id)
@@ -262,7 +258,7 @@ func (c *Core) Save(path string) errorCodes {
 	var hasp int64
 	var ok bool
 	if ok, hasp = c.Stop(); !ok {
-		go c.lgr.log(errMsgCoreNotStop).context("Method", "Save").send()
+		log(errMsgCoreNotStop).context("Method", "Save").send()
 		return ErrCodeCoreStop
 	}
 	defer func() {
@@ -273,7 +269,7 @@ func (c *Core) Save(path string) errorCodes {
 
 	var buf bytes.Buffer
 	for i := uint64(0); i < storageNumber; i++ {
-		for id, u := range c.storage.data[i].data {
+		for id, u := range c.storage[i].data {
 			for key, balance := range u.totalUnsafe() {
 				buf.Write([]byte(fmt.Sprintf("%d%s%d%s%s%s", id, separatorSymbol, balance, separatorSymbol, key, endLineSymbol)))
 			}
@@ -281,7 +277,7 @@ func (c *Core) Save(path string) errorCodes {
 	}
 
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
-		go c.lgr.log(errMsgCoreNotCreateFile).context("Path", path).context("Method", "Save").send()
+		log(errMsgCoreNotCreateFile).context("Path", path).context("Method", "Save").send()
 		return ErrCodeSaveCreateFile
 	}
 	return Ok

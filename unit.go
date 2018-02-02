@@ -13,14 +13,14 @@ unit - aggregates accounts.
 */
 type unit struct {
 	sync.Mutex
-	accounts map[string]*Account
+	accounts map[string]*account
 }
 
 /*
 newUnit - create new Unit.
 */
 func newUnit() *unit {
-	k := &unit{accounts: make(map[string]*Account)}
+	k := &unit{accounts: make(map[string]*account)}
 	return k
 }
 
@@ -28,7 +28,7 @@ func newUnit() *unit {
 getAccount - take account by key.
 If there is no such account, it will be created (with zero balance).
 */
-func (u *unit) getAccount(key string) *Account {
+func (u *unit) getAccount(key string) *account {
 	a, ok := u.accounts[key]
 	if !ok {
 		u.Lock()

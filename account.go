@@ -10,14 +10,14 @@ import (
 )
 
 /*
-Account - keeps a balance.
+account - keeps a balance.
 Account balance can not be less than zero.
 
 The counter has two tasks:
 	counts the number of operations performed
 	stops the account (new operations are not started)
 */
-type Account struct {
+type account struct {
 	counter int64
 	balance int64
 }
@@ -25,8 +25,8 @@ type Account struct {
 /*
 newAccount - create new account.
 */
-func newAccount(amount int64) *Account {
-	k := &Account{balance: amount}
+func newAccount(amount int64) *account {
+	k := &account{balance: amount}
 	return k
 }
 
@@ -39,7 +39,7 @@ Returned result:
 	greater than or equal to zero // OK
 	less than zero // Error
 */
-func (a *Account) addition(amount int64) int64 {
+func (a *account) addition(amount int64) int64 {
 
 	// The hidden part of the code allows you
 	// to speed up a bit by avoiding the cycle start
@@ -69,14 +69,14 @@ func (a *Account) addition(amount int64) int64 {
 /*
 total - current account balance.
 */
-func (a *Account) total() int64 {
+func (a *account) total() int64 {
 	return atomic.LoadInt64(&a.balance)
 }
 
 /*
 catch - get permission to perform operations with the account.
 */
-func (a *Account) catch() bool {
+func (a *account) catch() bool {
 	if atomic.LoadInt64(&a.counter) < 0 {
 		return false
 	}
@@ -90,14 +90,14 @@ func (a *Account) catch() bool {
 /*
 throw - current account operation has been completed
 */
-func (a *Account) throw() {
+func (a *account) throw() {
 	atomic.AddInt64(&a.counter, -1)
 }
 
 /*
 start - start an account.
 */
-func (a *Account) start() bool {
+func (a *account) start() bool {
 	var currentCounter int64
 	for i := trialLimit; i > trialStop; i-- {
 		currentCounter = atomic.LoadInt64(&a.counter)
@@ -116,7 +116,7 @@ func (a *Account) start() bool {
 /*
 stop - stop an account.
 */
-func (a *Account) stop() bool {
+func (a *account) stop() bool {
 	var currentCounter int64
 
 	for i := trialLimit; i > trialStop; i-- {

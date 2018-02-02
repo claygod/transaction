@@ -29,20 +29,20 @@ Returned codes:
 func (t *Transaction) exeTransaction() errorCodes {
 	// catch (core)
 	if !t.core.catch() {
-		t.core.lgr.log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
+		log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
 		return ErrCodeCoreCatch
 	}
 	defer t.core.throw()
 
 	// fill
 	if err := t.fill(); err != Ok {
-		t.core.lgr.log(errMsgTransactionNotFill).context("Method", "exeTransaction").send()
+		log(errMsgTransactionNotFill).context("Method", "exeTransaction").send()
 		return err
 	}
 
 	// catch (accounts)
 	if err := t.catch(); err != Ok {
-		t.core.lgr.log(errMsgTransactionNotCatch).context("Method", "exeTransaction").send()
+		log(errMsgTransactionNotCatch).context("Method", "exeTransaction").send()
 		return err
 	}
 	// addition
@@ -50,7 +50,7 @@ func (t *Transaction) exeTransaction() errorCodes {
 		if res := i.account.addition(i.amount); res < 0 {
 			t.rollback(num)
 			t.throw(len(t.reqs))
-			t.core.lgr.log(errMsgAccountCredit).context("Unit", i.id).
+			log(errMsgAccountCredit).context("Unit", i.id).
 				context("Account", i.key).context("Amount", i.amount).
 				context("Method", "exeTransaction").context("Wrong balance", res).send()
 			return ErrCodeTransactionCredit
@@ -102,7 +102,7 @@ func (t *Transaction) catch() errorCodes {
 	for i, r := range t.reqs {
 		if !r.account.catch() {
 			t.throw(i)
-			t.core.lgr.log(errMsgAccountNotCatch).context("Unit", r.id).
+			log(errMsgAccountNotCatch).context("Unit", r.id).
 				context("Account", r.key).context("Method", "Transaction.catch").
 				context("Acc counter", r.account.counter).
 				context("Acc balance", r.account.balance).send()
@@ -131,5 +131,5 @@ type request struct {
 	id      int64
 	key     string
 	amount  int64
-	account *Account
+	account *account
 }
