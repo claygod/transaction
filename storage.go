@@ -14,6 +14,7 @@ const storageShift uint64 = 64 - storageDegree
 
 /*
 storage - provides access to sections with units.
+The storage is executed as an array with maps to reduce the GC pauses.
 */
 type storage [storageNumber]*section
 
@@ -42,12 +43,17 @@ func (s *storage) delUnit(id int64) (*unit, bool) {
 	return s[(uint64(id)<<storageShift)>>storageShift].delUnit(id)
 }
 
+/*
+id - create an intermediate identifier from a persistent identifier.
+*/
 func (s *storage) id(id int64) uint64 {
 	return (uint64(id) << storageShift) >> storageShift
 }
 
 /*
 section - provides access to units.
+Frequent operations to get a unit are executed in the unlocked mode.
+Rare operations of adding and removing a unit are executed with a lock.
 */
 type section struct {
 	sync.Mutex
