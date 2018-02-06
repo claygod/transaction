@@ -52,11 +52,11 @@ func (s *storage) id(id int64) uint64 {
 
 /*
 section - provides access to units.
-Frequent operations to get a unit are executed in the unlocked mode.
+Frequent operations to get a unit are executed in the read/unlocked mode.
 Rare operations of adding and removing a unit are executed with a lock.
 */
 type section struct {
-	sync.Mutex
+	sync.RWMutex
 	data map[int64]*unit
 }
 
@@ -81,9 +81,12 @@ func (s *section) addUnit(id int64) bool {
 }
 
 func (s *section) getUnit(id int64) *unit {
+	s.RLock()
 	if u, ok := s.data[id]; ok {
+		s.RUnlock()
 		return u
 	}
+	s.RUnlock()
 	return nil
 }
 
