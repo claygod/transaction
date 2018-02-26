@@ -26,6 +26,24 @@ func TestAccountAdd(t *testing.T) {
 	trialLimit = trialLimitConst
 }
 
+func TestAccountAddingOverflow1(t *testing.T) {
+	a := newAccount(-1)
+
+	if res := a.addition(-0x8000000000000000); res != -0x8000000000000000 {
+		t.Error("Overflow error (1)")
+		t.Error(res)
+	}
+}
+
+func TestAccountAddingOverflow2(t *testing.T) {
+	a := newAccount(-0x8000000000000000)
+
+	if res := a.addition(-5); res != -5 {
+		t.Error("Overflow error (2)")
+		t.Error(res)
+	}
+}
+
 func TestAccountCredit(t *testing.T) {
 	a := newAccount(100)
 	if a.addition(-50) != 50 {

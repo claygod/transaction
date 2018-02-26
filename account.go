@@ -52,6 +52,9 @@ func (a *account) addition(amount int64) int64 {
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount
+		if amount < 0 && nb > b {
+			return amount
+		}
 		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
 			return nb
 		}
