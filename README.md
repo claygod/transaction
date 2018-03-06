@@ -247,6 +247,7 @@ I have a single-core processor, should I use your library in this case?
 
 - [x] Draw a sequence diagram
 - [ ] Example of using a library as a server
+- [ ] Write-Ahead Logging  (WAL)
 
 ## Bench
 
