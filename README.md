@@ -263,3 +263,5 @@ i7-6700T:
 - BenchmarkTransferParallel-8         	 5000000	       277 ns/op
 - BenchmarkBuySequence-8              	 2000000	       644 ns/op
 - BenchmarkBuyParallel-8              	 5000000	       354 ns/op
+
+Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
