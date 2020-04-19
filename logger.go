@@ -26,11 +26,13 @@ context - add context to the log
 */
 func (l logger) context(k string, v interface{}) logger {
 	l[k] = v
+
 	return l
 }
 
 func (l logger) send() {
 	out := ""
+
 	for k, value := range l {
 		switch v := value.(type) {
 		case int, int64:
@@ -39,5 +41,6 @@ func (l logger) send() {
 			out += fmt.Sprintf("%s: %s. ", k, v)
 		}
 	}
+
 	go lg.Print(out)
 }
