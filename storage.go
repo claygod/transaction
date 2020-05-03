@@ -27,6 +27,7 @@ func newStorage() *storage {
 	for i := uint64(0); i < storageNumber; i++ {
 		s[i] = newSection()
 	}
+
 	return &s
 }
 
@@ -67,26 +68,33 @@ func newSection() *section {
 	s := &section{
 		data: make(map[int64]*unit),
 	}
+
 	return s
 }
 
 func (s *section) addUnit(id int64) bool {
 	s.Lock()
 	defer s.Unlock()
+
 	if _, ok := s.data[id]; !ok {
 		s.data[id] = newUnit()
 		return true
 	}
+
 	return false
 }
 
 func (s *section) getUnit(id int64) *unit {
 	s.RLock()
+
 	if u, ok := s.data[id]; ok {
 		s.RUnlock()
+
 		return u
 	}
+
 	s.RUnlock()
+
 	return nil
 }
 
@@ -96,7 +104,9 @@ func (s *section) delUnit(id int64) (*unit, bool) {
 
 	if u, ok := s.data[id]; ok {
 		delete(s.data, id)
+
 		return u, true
 	}
+
 	return nil, false
 }
