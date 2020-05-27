@@ -16,8 +16,10 @@ and the `true` returns, otherwise the `false` is returned.
 func (c *Core) catch() bool {
 	if atomic.LoadInt64(&c.hasp) == stateOpen {
 		atomic.AddInt64(&c.counter, 1)
+
 		return true
 	}
+
 	return false
 }
 
@@ -39,8 +41,10 @@ Returned codes:
 */
 func (c *Core) getAccount(id int64, key string) (*account, errorCodes) {
 	u := c.storage.getUnit(id)
+
 	if u == nil {
 		return nil, ErrCodeUnitNotExist
 	}
+
 	return u.getAccount(key), Ok
 }
