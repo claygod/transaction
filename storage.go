@@ -78,6 +78,7 @@ func (s *section) addUnit(id int64) bool {
 
 	if _, ok := s.data[id]; !ok {
 		s.data[id] = newUnit()
+
 		return true
 	}
 

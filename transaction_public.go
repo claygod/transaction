@@ -23,6 +23,7 @@ Input variables:
 */
 func (t *Transaction) Debit(customer int64, account string, count uint64) *Transaction {
 	t.up = append(t.up, &request{id: customer, key: account, amount: int64(count)})
+
 	return t
 }
 
@@ -36,6 +37,7 @@ Input variables:
 */
 func (t *Transaction) Credit(customer int64, account string, count uint64) *Transaction {
 	t.reqs = append(t.reqs, &request{id: customer, key: account, amount: -(int64(count))})
+
 	return t
 }
 
@@ -51,5 +53,6 @@ Returned codes:
 */
 func (t *Transaction) End() errorCodes {
 	t.reqs = append(t.reqs, t.up...)
+
 	return t.exeTransaction()
 }
