@@ -36,6 +36,7 @@ func (u *unit) getAccount(key string) *account {
 		defer u.Unlock()
 
 		a, ok = u.accounts[key]
+
 		if !ok {
 			a = newAccount(0)
 			u.accounts[key] = a

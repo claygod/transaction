@@ -13,6 +13,7 @@ func newTransaction(c *Core) *Transaction {
 		up:   make([]*request, 0, usualNumTransaction),
 		reqs: make([]*request, 0, usualNumTransaction),
 	}
+
 	return t
 }
 
@@ -93,6 +94,7 @@ func (t *Transaction) fill() errorCodes {
 			// NOTE: log in method getAccount
 			return err
 		}
+
 		t.reqs[i].account = a
 	}
 
