@@ -37,6 +37,7 @@ func (l logger) send() {
 		switch v := value.(type) {
 		case int, int64:
 			out += fmt.Sprintf("%s: %d. ", k, v)
+
 		case string:
 			out += fmt.Sprintf("%s: %s. ", k, v)
 		}

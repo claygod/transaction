@@ -26,8 +26,7 @@ type account struct {
 newAccount - create new account.
 */
 func newAccount(amount int64) *account {
-	k := &account{balance: amount}
-	return k
+	return &account{balance: amount}
 }
 
 /*
@@ -150,6 +149,7 @@ func (a *account) stop() bool {
 		}
 		runtime.Gosched()
 	}
+
 	currentCounter = atomic.LoadInt64(&a.counter)
 
 	if currentCounter < 0 && currentCounter > permitError {
