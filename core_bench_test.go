@@ -14,12 +14,15 @@ func BenchmarkTotalUnitSequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 223372036854775).End()
 	}
+
 	u := 0
 	b.StartTimer()
+
 	for i := 0; i < b.N; i++ {
 		tr.TotalUnit(int64(uint16(u)))
 		u++
@@ -33,6 +36,7 @@ func BenchmarkTotalUnitParallel(b *testing.B) {
 	tr.Start()
 	tr.AddUnit(1234567)
 	tr.Begin().Debit(1234567, "USD", 223372036854775806).End()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 223372036854775).End()
@@ -53,12 +57,15 @@ func BenchmarkCreditSequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 223372036854775).End()
 	}
+
 	u := 0
 	b.StartTimer()
+
 	for i := 0; i < b.N; i++ {
 		tr.Begin().Credit(int64(uint16(i)), "USD", 1).End()
 		u++
@@ -72,6 +79,7 @@ func BenchmarkCreditParallel(b *testing.B) {
 	tr.Start()
 	tr.AddUnit(1234567)
 	tr.Begin().Debit(1234567, "USD", 223372036854775806).End()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 223372036854775).End()
@@ -79,6 +87,7 @@ func BenchmarkCreditParallel(b *testing.B) {
 
 	u := 0
 	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().Credit(int64(uint16(u)), "USD", 1).End()
@@ -92,12 +101,14 @@ func BenchmarkDebitSequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 1).End()
 	}
 
 	b.StartTimer()
+
 	for i := 0; i < b.N; i++ {
 		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
 	}
@@ -109,6 +120,7 @@ func BenchmarkDebitParallel(b *testing.B) {
 	tr := New()
 	tr.Start()
 	tr.AddUnit(1234567)
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
@@ -116,6 +128,7 @@ func BenchmarkDebitParallel(b *testing.B) {
 
 	i := 0
 	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().Debit(int64(uint16(i)), "USD", 1).End()
@@ -129,12 +142,15 @@ func BenchmarkTransferSequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 100000000).End()
 	}
+
 	u := 0
 	b.StartTimer()
+
 	for i := 0; i < b.N; i++ {
 		tr.Begin().Credit(int64(uint16(u)), "USD", 1).Debit(int64(uint16(u+1)), "USD", 1).End()
 		u += 2
@@ -148,6 +164,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 	tr.Start()
 	tr.AddUnit(1234567)
 	tr.AddUnit(1234568)
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 100000000).End()
@@ -155,6 +172,7 @@ func BenchmarkTransferParallel(b *testing.B) {
 
 	u := 0
 	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().Credit(int64(uint16(u)), "USD", 1).Debit(int64(uint16(u+1)), "USD", 1).End()
@@ -176,6 +194,7 @@ func BenchmarkBuySequence(b *testing.B) {
 
 	b.StartTimer()
 	u := 0
+
 	for i := 0; i < b.N; i++ {
 		//tn.reqs[0].account
 		tr.Begin().
@@ -193,6 +212,7 @@ func BenchmarkBuyParallel(b *testing.B) {
 	tr.Start()
 	tr.AddUnit(1234567)
 	tr.AddUnit(1234568)
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 100000000).End()
@@ -201,6 +221,7 @@ func BenchmarkBuyParallel(b *testing.B) {
 
 	u := 0
 	b.StartTimer()
+
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
 			tr.Begin().
@@ -217,11 +238,13 @@ func BenchmarkTrGetAccount2Sequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 100000000).End()
 		tr.Begin().Debit(i, "APPLE", 5000000).End()
 	}
+
 	u := 0
 	b.StartTimer()
 
@@ -237,13 +260,14 @@ func BenchmarkTrGetAccount2Parallel(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		tr.AddUnit(i)
 		tr.Begin().Debit(i, "USD", 100000000).End()
 		tr.Begin().Debit(i, "APPLE", 5000000).End()
 	}
-	u := 0
 
+	u := 0
 	b.StartTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
@@ -261,11 +285,13 @@ func BenchmarkUnitGetAccountSequence(b *testing.B) {
 
 	tr := New()
 	tr.Start()
+
 	for i := int64(0); i < 65536; i++ {
 		un.getAccount("USD")
 	}
 
 	b.StartTimer()
+
 	for i := 0; i < b.N; i++ {
 		//tn.reqs[0].account
 		un.getAccount("USD")

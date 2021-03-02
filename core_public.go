@@ -45,14 +45,18 @@ Returned codes:
 func (c *Core) AddUnit(id int64) errorCodes {
 	if !c.catch() {
 		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "AddUnit").send()
+
 		return ErrCodeCoreCatch
 	}
+
 	defer c.throw()
 
 	if !c.storage.addUnit(id) {
 		log(errMsgUnitExist).context("Unit", id).context("Method", "AddUnit").send()
+
 		return ErrCodeUnitExist
 	}
+
 	return Ok
 }
 
@@ -71,24 +75,31 @@ Returned codes:
 func (c *Core) DelUnit(id int64) ([]string, errorCodes) {
 	if !c.catch() {
 		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "DelUnit").send()
+
 		return nil, ErrCodeCoreCatch
 	}
+
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
+
 	if un == nil {
 		log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
+
 		return nil, ErrCodeUnitNotExist
 	}
 
 	if accList, err := un.delAllAccounts(); err != Ok {
 		log(errMsgUnitNotDelAll).context("Error code", err).context("Unit", id).context("Method", "DelUnit").send()
+
 		return accList, err
 	}
 
 	_, ok := c.storage.delUnit(id)
+
 	if !ok {
 		log(errMsgUnitNotExist).context("Unit", id).context("Method", "DelUnit").send()
+
 		return nil, ErrCodeUnitNotExist
 	}
 
@@ -107,13 +118,17 @@ Returned codes:
 func (c *Core) TotalUnit(id int64) (map[string]int64, errorCodes) {
 	if !c.catch() {
 		log(errMsgCoreNotCatch).context("Unit", id).context("Method", "TotalUnit").send()
+
 		return nil, ErrCodeCoreCatch
 	}
+
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
+
 	if un == nil {
 		log(errMsgUnitNotExist).context("Unit", id).context("Method", "TotalUnit").send()
+
 		return nil, ErrCodeUnitNotExist
 	}
 
@@ -133,15 +148,20 @@ Returned codes:
 func (c *Core) TotalAccount(id int64, key string) (int64, errorCodes) {
 	if !c.catch() {
 		log(errMsgCoreNotCatch).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
+
 		return permitError, ErrCodeCoreCatch
 	}
+
 	defer c.throw()
 
 	un := c.storage.getUnit(id)
+
 	if un == nil {
 		log(errMsgUnitNotExist).context("Unit", id).context("Account", key).context("Method", "TotalAccount").send()
+
 		return permitError, ErrCodeUnitNotExist
 	}
+
 	return un.getAccount(key).total(), Ok
 }
 
@@ -156,9 +176,12 @@ func (c *Core) Start() bool {
 		if atomic.LoadInt64(&c.hasp) == stateOpen || atomic.CompareAndSwapInt64(&c.hasp, stateClosed, stateOpen) {
 			return true
 		}
+
 		runtime.Gosched()
 	}
+
 	log(errMsgCoreNotStart).context("Method", "Start").send()
+
 	return false
 }
 
@@ -171,13 +194,15 @@ func (c *Core) Stop() (bool, int64) {
 	for i := trialLimit; i > trialStop; i-- {
 		if atomic.LoadInt64(&c.hasp) == stateClosed {
 			return true, stateClosed
-		} else if atomic.LoadInt64(&c.counter) == 0 &&
-			atomic.CompareAndSwapInt64(&c.hasp, stateOpen, stateClosed) {
+		} else if atomic.LoadInt64(&c.counter) == 0 && atomic.CompareAndSwapInt64(&c.hasp, stateOpen, stateClosed) {
 			return true, stateOpen
 		}
+
 		runtime.Gosched()
 	}
+
 	log(errMsgCoreNotStop).context("Method", "Stop").send()
+
 	return false, atomic.LoadInt64(&c.hasp)
 }
 
@@ -200,48 +225,65 @@ func (c *Core) Load(path string) (errorCodes, map[int64]string) {
 
 	if ok, hasp = c.Stop(); !ok {
 		log(errMsgCoreNotStop).context("Method", "Load").send()
+
 		return ErrCodeCoreStop, notLoad
 	}
+
 	defer func() {
 		if hasp == stateOpen {
 			c.Start()
 		}
 	}()
+
 	bs, err := ioutil.ReadFile(path)
+
 	if err != nil {
 		log(errMsgCoreNotReadFile).context("Path", path).context("Method", "Load").send()
+
 		return ErrCodeLoadReadFile, notLoad
 	}
+
 	endLine := []byte(endLineSymbol)
 	separator := []byte(separatorSymbol)
+
 	for _, str := range bytes.Split(bs, endLine) {
 		a := bytes.Split(str, separator)
+
 		if len(a) != 3 {
 			continue
 		}
+
 		id, err := strconv.ParseInt(string(a[0]), 10, 64)
+
 		if err != nil {
 			log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
+
 			return ErrCodeLoadStrToInt64, notLoad
 		}
+
 		balance, err := strconv.ParseInt(string(a[1]), 10, 64)
+
 		if err != nil {
 			log(errMsgCoreParseString).context("Path", path).context("String", str).context("Method", "Load").send()
+
 			return ErrCodeLoadStrToInt64, notLoad
 		}
+
 		un := c.storage.getUnit(id)
+
 		if un == nil {
 			c.storage.addUnit(id)
 			un = c.storage.getUnit(id)
 		}
+
 		if _, ok := un.accounts[string(a[2])]; !ok {
 			un.accounts[string(a[2])] = newAccount(balance)
 		} else {
 			// The existing accounts are not overwritten
 			notLoad[id] = string(a[2])
 		}
-
 	}
+
 	return Ok, notLoad
 }
 
@@ -257,10 +299,13 @@ Returned codes:
 func (c *Core) Save(path string) errorCodes {
 	var hasp int64
 	var ok bool
+
 	if ok, hasp = c.Stop(); !ok {
 		log(errMsgCoreNotStop).context("Method", "Save").send()
+
 		return ErrCodeCoreStop
 	}
+
 	defer func() {
 		if hasp == stateOpen {
 			c.Start()
@@ -268,6 +313,7 @@ func (c *Core) Save(path string) errorCodes {
 	}()
 
 	var buf bytes.Buffer
+
 	for i := uint64(0); i < storageNumber; i++ {
 		for id, u := range c.storage[i].data {
 			for key, balance := range u.totalUnsafe() {
@@ -278,8 +324,10 @@ func (c *Core) Save(path string) errorCodes {
 
 	if ioutil.WriteFile(path, buf.Bytes(), os.FileMode(0777)) != nil {
 		log(errMsgCoreNotCreateFile).context("Path", path).context("Method", "Save").send()
+
 		return ErrCodeSaveCreateFile
 	}
+
 	return Ok
 }
 

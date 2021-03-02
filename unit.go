@@ -21,6 +21,7 @@ newUnit - create new Unit.
 */
 func newUnit() *unit {
 	k := &unit{accounts: make(map[string]*account)}
+
 	return k
 }
 
@@ -35,11 +36,13 @@ func (u *unit) getAccount(key string) *account {
 		defer u.Unlock()
 
 		a, ok = u.accounts[key]
+
 		if !ok {
 			a = newAccount(0)
 			u.accounts[key] = a
 		}
 	}
+
 	return a
 }
 
@@ -63,9 +66,11 @@ Without locking. Use this method only in serial (non-parallel) mode.
 */
 func (u *unit) totalUnsafe() map[string]int64 {
 	t := make(map[string]int64)
+
 	for k, a := range u.accounts {
 		t[k] = a.total()
 	}
+
 	return t
 }
 
@@ -76,13 +81,17 @@ The account can not be deleted if it is not stopped or has a non-zero balance.
 func (u *unit) delAccount(key string) errorCodes {
 	u.Lock()
 	defer u.Unlock()
+
 	a, ok := u.accounts[key]
+
 	if !ok {
 		return ErrCodeAccountNotExist
 	}
+
 	if a.total() != 0 {
 		return ErrCodeAccountNotEmpty
 	}
+
 	if !a.stop() {
 		return ErrCodeAccountNotStop
 	}
@@ -104,11 +113,14 @@ Returned codes:
 func (u *unit) delAllAccounts() ([]string, errorCodes) {
 	u.Lock()
 	defer u.Unlock()
+
 	if notStop := u.stop(); len(notStop) != 0 {
 		return notStop, ErrCodeAccountNotStop
 	}
+
 	if notDel := u.delStoppedAccounts(); len(notDel) != 0 {
 		u.start() // Undeleted accounts are restarted
+
 		return notDel, ErrCodeUnitNotEmpty
 	}
 
@@ -121,6 +133,7 @@ Returns a list of not deleted accounts (with a non-zero balance).
 */
 func (u *unit) delStoppedAccounts() []string {
 	notDel := make([]string, 0, len(u.accounts))
+
 	for k, a := range u.accounts {
 		if a.total() != 0 {
 			notDel = append(notDel, k)
@@ -128,6 +141,7 @@ func (u *unit) delStoppedAccounts() []string {
 			delete(u.accounts, k)
 		}
 	}
+
 	return notDel
 }
 
@@ -137,11 +151,13 @@ Returns a list of not starting accounts.
 */
 func (u *unit) start() []string {
 	notStart := make([]string, 0, len(u.accounts))
+
 	for k, a := range u.accounts {
 		if !a.start() {
 			notStart = append(notStart, k)
 		}
 	}
+
 	return notStart
 }
 
@@ -151,10 +167,12 @@ Returns a list of non-stopped accounts.
 */
 func (u *unit) stop() []string {
 	notStop := make([]string, 0, len(u.accounts))
+
 	for k, a := range u.accounts {
 		if !a.stop() {
 			notStop = append(notStop, k)
 		}
 	}
+
 	return notStop
 }

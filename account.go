@@ -26,8 +26,7 @@ type account struct {
 newAccount - create new account.
 */
 func newAccount(amount int64) *account {
-	k := &account{balance: amount}
-	return k
+	return &account{balance: amount}
 }
 
 /*
@@ -52,12 +51,15 @@ func (a *account) addition(amount int64) int64 {
 	for i := trialLimit; i > trialStop; i-- {
 		b := atomic.LoadInt64(&a.balance)
 		nb := b + amount
+
 		if amount < 0 && nb > b {
 			return amount
 		}
+
 		if nb < 0 || atomic.CompareAndSwapInt64(&a.balance, b, nb) {
 			return nb
 		}
+
 		//if nb < 0 {
 		//	return nb
 		//}
@@ -66,6 +68,7 @@ func (a *account) addition(amount int64) int64 {
 		//}
 		runtime.Gosched()
 	}
+
 	return permitError
 }
 
@@ -83,10 +86,13 @@ func (a *account) catch() bool {
 	if atomic.LoadInt64(&a.counter) < 0 {
 		return false
 	}
+
 	if atomic.AddInt64(&a.counter, 1) > 0 {
 		return true
 	}
+
 	atomic.AddInt64(&a.counter, -1)
+
 	return false
 }
 
@@ -102,8 +108,10 @@ start - start an account.
 */
 func (a *account) start() bool {
 	var currentCounter int64
+
 	for i := trialLimit; i > trialStop; i-- {
 		currentCounter = atomic.LoadInt64(&a.counter)
+
 		if currentCounter >= 0 {
 			return true
 		}
@@ -111,8 +119,10 @@ func (a *account) start() bool {
 		if atomic.CompareAndSwapInt64(&a.counter, permitError, 0) {
 			return true
 		}
+
 		runtime.Gosched()
 	}
+
 	return false
 }
 
@@ -124,21 +134,27 @@ func (a *account) stop() bool {
 
 	for i := trialLimit; i > trialStop; i-- {
 		currentCounter = atomic.LoadInt64(&a.counter)
+
 		switch {
 		case currentCounter == 0:
 			if atomic.CompareAndSwapInt64(&a.counter, 0, permitError) {
 				return true
 			}
+
 		case currentCounter > 0:
 			atomic.CompareAndSwapInt64(&a.counter, currentCounter, currentCounter+permitError)
+
 		case currentCounter == permitError:
 			return true
 		}
 		runtime.Gosched()
 	}
+
 	currentCounter = atomic.LoadInt64(&a.counter)
+
 	if currentCounter < 0 && currentCounter > permitError {
 		atomic.AddInt64(&a.counter, -permitError)
 	}
+
 	return false
 }

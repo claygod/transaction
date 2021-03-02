@@ -15,6 +15,7 @@ import (
 func TestUsage(t *testing.T) {
 	path := "./test.tdb"
 	tr := New()
+
 	if !tr.Start() {
 		t.Error("Now the start is possible!")
 	}
@@ -44,9 +45,11 @@ func TestTransfer(t *testing.T) {
 	if err := tr.Begin().Debit(14760464, "USD", 11).End(); err != Ok {
 		t.Error(err)
 	}
+
 	if err := tr.Begin().Debit(2674560, "USD", 7).End(); err != Ok {
 		t.Error(err)
 	}
+
 	if err := tr.Begin().Credit(2674560, "USD", 2).End(); err != Ok {
 		t.Error(err)
 	}
@@ -65,8 +68,10 @@ func TestCoreStart(t *testing.T) {
 	if !tr.Start() {
 		t.Error("Now the start is possible!")
 	}
+
 	tr.Stop()
 	trialLimit = trialStop
+
 	if tr.Start() {
 		t.Error("Now the start is possible!")
 	}
@@ -85,6 +90,7 @@ func TestCoreStop(t *testing.T) {
 	if ok, _ := tr.Stop(); !ok {
 		t.Error("Now the stop is possible!")
 	}
+
 	tr.Start()
 	trialLimit = trialStop
 	//tr.hasp = stateClosed
@@ -131,6 +137,7 @@ func TestCoreAddUnit(t *testing.T) {
 func TestCoreDelUnit(t *testing.T) {
 	tr := New()
 	tr.Start()
+
 	if _, err := tr.DelUnit(123); err == Ok {
 		t.Error("Removed non-existent unit")
 	}
@@ -147,6 +154,7 @@ func TestCoreDelUnit(t *testing.T) {
 	tr.storage.getUnit(456).getAccount("USD").counter = 1
 
 	trialLimit = trialStop + 100
+
 	if _, err := tr.DelUnit(456); err == Ok {
 		t.Error("The unit has not been deleted")
 	}
@@ -156,6 +164,7 @@ func TestCoreDelUnit(t *testing.T) {
 	if _, err := tr.DelUnit(456); err == Ok {
 		t.Error("Due to the blocking, it was not possible to del a unit.")
 	}
+
 	trialLimit = trialLimitConst
 }
 
@@ -180,9 +189,11 @@ func TestCoreTotalUnit(t *testing.T) {
 	}
 
 	tr.hasp = stateClosed
+
 	if _, err := tr.TotalUnit(123); err != ErrCodeCoreCatch {
 		t.Error("Resource is locked and can not allow operation")
 	}
+
 	tr.hasp = stateOpen
 }
 
@@ -211,9 +222,11 @@ func TestCoreTotalAccount(t *testing.T) {
 	}
 
 	tr.hasp = stateClosed
+
 	if _, err := tr.TotalAccount(123, "USD"); err != ErrCodeCoreCatch {
 		t.Error("Resource is locked and can not allow operation")
 	}
+
 	tr.hasp = stateOpen
 }
 
@@ -226,12 +239,15 @@ func TestCoreSave(t *testing.T) {
 
 	trialLimit = trialStop
 	tr.hasp = stateClosed
+
 	if tr.Save(path) == Ok {
 		t.Error("The lock should prevent the file from being saved")
 	}
+
 	trialLimit = trialLimitConst
 
 	tr.hasp = stateOpen
+
 	if tr.Save(path) != Ok {
 		t.Error("There is no lock, saving should be successful")
 	}
@@ -240,28 +256,38 @@ func TestCoreSave(t *testing.T) {
 	separator := []byte(separatorSymbol)
 
 	bs, err := ioutil.ReadFile(path)
+
 	if err != nil {
 		t.Error("Can not find saved file")
 	}
+
 	str := bytes.Split(bs, endLine)[0]
 	a := bytes.Split(str, separator)
+
 	if len(a) != 3 {
 		t.Error("Invalid number of columns")
 	}
+
 	id, err := strconv.ParseInt(string(a[0]), 10, 64)
+
 	if err != nil {
 		t.Error("Error converting string to integer (id account)")
 	}
+
 	balance, err := strconv.ParseInt(string(a[1]), 10, 64)
+
 	if err != nil {
 		t.Error("Error converting string to integer (balance account)")
 	}
+
 	if id != 123 {
 		t.Error("The account identifier does not match")
 	}
+
 	if balance != 7 {
 		t.Error("The account balance does not match")
 	}
+
 	os.Remove(path)
 	tr.Stop()
 }
@@ -276,22 +302,30 @@ func TestCoreLoad(t *testing.T) {
 	tr.Save(path)
 	tr.Stop()
 	tr2 := New()
+
 	if res, _ := tr2.Load(pathFake); res == Ok {
 		t.Errorf("The file `%s` does not exist", pathFake)
 	}
+
 	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("The file `%s` does exist", pathFake)
 	}
+
 	tr2.Start()
+
 	if res, _ := tr2.Load(path); res != Ok {
 		t.Errorf("Error loading the database file (%d)", res)
 	}
+
 	balance, res := tr2.TotalAccount(123, "USD")
+
 	if balance != 7 {
 		t.Errorf("Error in account balance (%d)", balance)
 	}
+
 	if res != Ok {
 		t.Errorf("Error in the downloaded account (%d)", res)
 	}
+
 	os.Remove(path)
 }

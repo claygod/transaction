@@ -13,6 +13,7 @@ func newTransaction(c *Core) *Transaction {
 		up:   make([]*request, 0, usualNumTransaction),
 		reqs: make([]*request, 0, usualNumTransaction),
 	}
+
 	return t
 }
 
@@ -30,21 +31,26 @@ func (t *Transaction) exeTransaction() errorCodes {
 	// catch (core)
 	if !t.core.catch() {
 		log(errMsgCoreNotCatch).context("Method", "exeTransaction").send()
+
 		return ErrCodeCoreCatch
 	}
+
 	defer t.core.throw()
 
 	// fill
 	if err := t.fill(); err != Ok {
 		log(errMsgTransactionNotFill).context("Method", "exeTransaction").send()
+
 		return err
 	}
 
 	// catch (accounts)
 	if err := t.catch(); err != Ok {
 		log(errMsgTransactionNotCatch).context("Method", "exeTransaction").send()
+
 		return err
 	}
+
 	// addition
 	for num, i := range t.reqs {
 		if res := i.account.addition(i.amount); res < 0 {
@@ -53,11 +59,13 @@ func (t *Transaction) exeTransaction() errorCodes {
 			log(errMsgAccountCredit).context("Unit", i.id).
 				context("Account", i.key).context("Amount", i.amount).
 				context("Method", "exeTransaction").context("Wrong balance", res).send()
+
 			return ErrCodeTransactionCredit
 		}
 	}
 	// throw
 	t.throw(len(t.reqs))
+
 	return Ok
 }
 
@@ -81,12 +89,15 @@ Returned codes:
 func (t *Transaction) fill() errorCodes {
 	for i, r := range t.reqs {
 		a, err := t.core.getAccount(r.id, r.key)
+
 		if err != Ok {
 			// NOTE: log in method getAccount
 			return err
 		}
+
 		t.reqs[i].account = a
 	}
+
 	return Ok
 }
 
@@ -106,9 +117,11 @@ func (t *Transaction) catch() errorCodes {
 				context("Account", r.key).context("Method", "Transaction.catch").
 				context("Acc counter", r.account.counter).
 				context("Acc balance", r.account.balance).send()
+
 			return ErrCodeTransactionCatch
 		}
 	}
+
 	return Ok
 }
 
@@ -120,6 +133,7 @@ func (t *Transaction) throw(num int) {
 		if i >= num {
 			break
 		}
+
 		r.account.throw()
 	}
 }
