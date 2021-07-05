@@ -77,7 +77,7 @@ A purchase is essentially two simultaneous funds transfers
 // Example of buying two shares of "Apple" for $10
 tr.Begin().
 	Credit(buyerId, "USD", 10).Debit(sellerId, "USD", 10).
-	Debit(buyerId, "APPLE", 2).Credit(sellerId, "APPLE", 2).
+	Credit(sellerId, "APPLE", 2).Debit(buyerId, "APPLE", 2).
 	End()
 ```
 
