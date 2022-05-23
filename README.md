@@ -265,4 +265,8 @@ i7-6700T:
 - BenchmarkBuySequence-8              	 2000000	       644 ns/op
 - BenchmarkBuyParallel-8              	 5000000	       354 ns/op
 
-Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+## Give us a star!
+
+If you like or are using this project to learn or start your solution, please give it a star. Thank you!
+
+#### Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
