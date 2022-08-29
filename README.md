@@ -269,4 +269,4 @@ i7-6700T:
 
 If you like or are using this project to learn or start your solution, please give it a star. Thank you!
 
-#### Copyright © 2017-2018 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
+#### Copyright © 2017-2022 Eduard Sesigin. All rights reserved. Contacts: <claygod@yandex.ru>
